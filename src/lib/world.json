@@ -1,0 +1,68 @@
+{
+    "rooms": {
+        "clearing": {
+            "description": "This is an open space before the mouth of an ominous cave.",
+            "actions": {
+                "look": [
+                    {
+                        "function": "describe",
+                        "params":[
+                            "clearing"
+                        ]
+                    }
+                ],
+                "north": [
+                    {
+                        "function": "travel",
+                        "params": ["cave"]
+                    }
+                ]
+            },
+            "things": [
+                "lighter"
+            ]
+        },
+        "cave": {
+            "description": "The interior of the cave is damp and covered with a strange red moss.",
+            "actions":{
+                "look": [
+                    {
+                        "function": "describe",
+                        "params":["cave"]
+                    }
+                ],
+                "south": [
+                    {
+                        "function": "say",
+                        "params": ["An earthquake rocks the mountain, causing a cascade of rocks outside and blocking the only way out."]
+                    },
+                    {
+                        "function": "replace",
+                        "params": ["rooms","cave","description","The cave is totally dark after the cave in. You cannot escape."]
+                    },
+                    {
+                        "function": "replace",
+                        "params": ["rooms","cave","actions","south",[{"function": "say", "params": ["Boulders block your way."]}]]
+                    },
+                    {
+                        "function": "replace",
+                        "params": ["rooms","cave","things",[]]
+                    }
+                ]
+            },
+            "things": [
+                "idol"
+            ]
+        }
+    },
+    "things": {
+        "lighter": {
+            "description": "a lighter",
+            "actions": {}
+        },
+        "idol": {
+            "description": "a stone idol",
+            "actions": {}
+        }
+    }
+}
