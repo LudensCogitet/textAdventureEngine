@@ -1,6 +1,45 @@
-<div class="console">
-    <div *ngFor="let line of feed">{{line}}</div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="console-style console-header col-8 text-center">
+            <span class="clickable">{{status.location[0].toUpperCase()+status.location.slice(1)}}</span>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div #console class="console console-style col-8" [scrollTop]="console.scrollHeight">
+            <div class="console-line" *ngFor="let line of feed">
+                <span class="clickable"
+                      *ngFor="let word of line"
+                      (click)="select($event)">
+                    {{word}}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <button (click)="select('Hand')" class="btn btn-lg btn-primary">
+            <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
+        </button>
+        <button (click)="select('North')" class="btn btn-lg btn-primary">
+            <i class="fa fa-arrow-up" aria-hidden="true"></i>
+        </button>
+        <button (click)="select('Hand')" class="btn btn-lg btn-primary">
+            <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="row justify-content-center">
+        <button (click)="select('West')" class="btn btn-lg btn-primary">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <button (click)="select('Look')" class="btn btn-lg btn-primary">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+        </button>
+        <button (click)="select('East')" class="btn btn-lg btn-primary">
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="row justify-content-center">
+        <button (click)="select('South')" class="btn btn-lg btn-primary">
+            <i class="fa fa-arrow-down" aria-hidden="true"></i>
+        </button>
+    </div>
 </div>
-<button (click)="select($event)" class="btn btn-primary">Look</button>
-<button (click)="select($event)" class="btn btn-primary">North</button>
-<button (click)="select($event)" class="btn btn-primary">South</button>

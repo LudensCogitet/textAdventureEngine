@@ -1,14 +1,15 @@
 {
     "rooms": {
         "clearing": {
-            "description": "This is an open space before the mouth of an ominous cave.",
             "actions": {
-                "look": [
+                "describe": [
                     {
-                        "function": "describe",
-                        "params":[
-                            "clearing"
-                        ]
+                        "function": "say",
+                        "params":["This is an open space just south of the mouth of an ominous cave."]
+                    },
+                    {
+                        "function": "items",
+                        "params": ["clearing", "There is ", " here."]
                     }
                 ],
                 "north": [
@@ -17,52 +18,69 @@
                         "params": ["cave"]
                     }
                 ]
-            },
-            "things": [
-                "lighter"
-            ]
+            }
         },
         "cave": {
-            "description": "The interior of the cave is damp and covered with a strange red moss.",
             "actions":{
-                "look": [
+                "describe": [
                     {
-                        "function": "describe",
-                        "params":["cave"]
+                        "conditions": { "cave_in": false },
+                        "function": "say",
+                        "params":[ "The interior of the cave is damp and covered with a strange red moss. Sunlight streams in from the cave mouth to the south." ]
+                    },
+                    {
+                        "conditions": { "cave_in": true },
+                        "function": "say",
+                        "params": [ "The cave is totally dark after the cave in. You cannot escape." ]
                     }
                 ],
                 "south": [
                     {
+                        "conditions": { "cave_in": false },
                         "function": "say",
-                        "params": ["An earthquake rocks the mountain, causing a cascade of rocks outside and blocking the only way out."]
+                        "params": ["An earthquake rocks the mountain, causing a cascade of rocks outside."]
                     },
                     {
-                        "function": "replace",
-                        "params": ["rooms","cave","description","The cave is totally dark after the cave in. You cannot escape."]
+                        "conditions": { "cave_in": false },
+                        "function": "set",
+                        "params": [["cave_in", true]]
                     },
                     {
-                        "function": "replace",
-                        "params": ["rooms","cave","actions","south",[{"function": "say", "params": ["Boulders block your way."]}]]
-                    },
-                    {
-                        "function": "replace",
-                        "params": ["rooms","cave","things",[]]
+                        "conditions": { "cave_in": true },
+                        "function": "say",
+                        "params": ["Boulders block your way."]
                     }
                 ]
-            },
-            "things": [
-                "idol"
-            ]
+            }
         }
     },
     "things": {
         "lighter": {
-            "description": "a lighter",
-            "actions": {}
+            "actions": {
+                "hand": [
+                    {
+                        "function": "say",
+                        "params": ["You pick up the lighter, but it slips out of your hand."]
+                    }
+                ],
+                "look": [
+                    {
+                        "function": "say",
+                        "params": ["It's a sleek looking oil lighter. It seems to be in great condition."]
+                    }
+                ]
+            },
+            "location": "clearing",
+            "description": "a lighter"
         },
         "idol": {
-            "description": "a stone idol",
-            "actions": {}
+            "actions": {},
+            "location": "cave",
+            "description": "a stone idol"
         }
-    }
+    },
+    "conditions": {
+        "cave_in": false
+    },
+    "player": {}
 }

@@ -8,19 +8,24 @@ let functions = {
     "say": function(text) {
         return text;
     },
-    "describe": function(place) {
-        let roomDescription = world.rooms[place].description || [];
-
-        let thingsDescription = world.rooms[place].things.map(thing => {
-            return `There is a ${world.things[thing].description} here.`;
-        });
-
-        return [roomDescription].concat(thingsDescription);
+    "set": function() {
+        for(let i = 0; i < arguments.length; i++) {
+            world.conditions[arguments[i][0]] = arguments[i][1];
+        }
+    },
+    "items": function(room, preface, coda) {
+        let items = [];
+        Object.keys(world.things).forEach(thing => {
+                if(world.things[thing].location === room)
+                    items.push(world.things[thing].description);
+            });
+        return items.map(item => `${preface}${item}${coda}`);
     },
     "travel": function(place) {
-        if(world.rooms[place]) {
             location = place;
-            return select('look')
+            if(world.rooms[place]) {
+                active = place;
+            return select('describe').text;
         }
     },
     "replace": function() {
@@ -36,18 +41,55 @@ let functions = {
 
 let select = (selected) => {
         selected = selected.toLowerCase();
-        active = world.things[selected];
 
-        let actions = world.rooms[location].actions[selected];
+        let returns;
 
-        if(!actions) return "You can't do that.";
+        if(active &&
+           world.things[selected] &&
+           world.things[selected].location === location &&
+           world.things[selected].actions[active]) {
+               returns = runActions(world.things[selected].actions[active]);
+        }
 
-        let returns = [];
-        actions.forEach(action => {
-            if(functions[action.function]) returns = returns.concat(functions[action.function](...action.params));
-        });
+        if(returns){
+            active = '';
+            return packageData(returns);
+        }
 
-        return returns;
+        if(world.rooms[location].actions[selected]) {
+            returns = runActions(world.rooms[location].actions[selected]);
+        }
+
+        if(!returns) active = selected;
+
+        return packageData(returns);
+};
+
+let runActions = (actions) => {
+    let returns = [];
+    actions.forEach(action => {
+        if(functions[action.function]) {
+            if(!action.conditions || !Object.keys(action.conditions).some(condition => action.conditions[condition] !== world.conditions[condition])){
+                let val = functions[action.function](...action.params);
+                if(val) returns = returns.concat(val);
+            }
+        }
+    });
+
+    if(!returns.length) return null;
+
+    return returns.filter(x => x);
+};
+
+let packageData = (returns) => {
+    return { text: returns,
+             status: {
+                     active: active,
+                     location: location,
+                     conditions: world.conditions,
+                     player: world.player
+                 }
+            };
 };
 
 module.exports = { select }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import * as fate from '../lib/fate';
 
 @Component({
@@ -7,17 +7,31 @@ import * as fate from '../lib/fate';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  public feed: string[] = [];
+  public feed:string[] = [];
+  public status:any = {};
 
   ngOnInit() {
-      this.printToFeed(fate.select('look'));
+      this.update(fate.select('describe'));
   }
 
   private printToFeed(text) {
+      if(!text) return;
+      text = text.map(entry => entry.split(" "));
       this.feed = this.feed.concat(text);
   }
 
+  private update(data) {
+      console.log("DATA", data);
+
+      if(data.status.location !== this.status.location)
+        this.feed = [];
+
+      this.status = data.status;
+      this.printToFeed(data.text);
+  }
+
   public select(event) {
-    this.printToFeed(fate.select(event.originalTarget.innerText));
+    let command = typeof event === "string" ? event : event.originalTarget.innerText.replace(/\W+/g, "");
+    this.update(fate.select(command));
   }
 }

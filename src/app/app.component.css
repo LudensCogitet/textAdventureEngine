@@ -1,0 +1,27 @@
+.console {
+    height: 500px;
+    overflow-y: auto;
+}
+
+.console-header {
+    font-size: 18pt !important;
+}
+
+.console-style {
+    background-color: black;
+    font-size: 14pt;
+    color: #00FF00;
+}
+
+.console-line {
+    margin-bottom: 10px;
+}
+
+.clickable {
+    cursor: pointer !important;
+}
+
+.clickable:hover {
+    color: white;
+    font-weight: bold;
+}
