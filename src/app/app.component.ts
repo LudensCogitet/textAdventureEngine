@@ -11,11 +11,12 @@ export class AppComponent {
   public status:any = {};
 
   ngOnInit() {
-      this.update(fate.select('describe'));
+      this.update(fate.start());
   }
 
   private printToFeed(text) {
       if(!text) return;
+      console.log(text);
       text = text.map(entry => entry.split(" "));
       this.feed = this.feed.concat(text);
   }

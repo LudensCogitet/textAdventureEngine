@@ -1,7 +1,8 @@
 'use strict';
 
 let world = require('./world.json');
-let location = "clearing";
+let location = world.start.location;
+let directives = world.start.directives;
 let active = "";
 
 let functions = {
@@ -14,18 +15,16 @@ let functions = {
         }
     },
     "items": function(room, preface, coda) {
-        let items = [];
-        Object.keys(world.things).forEach(thing => {
-                if(world.things[thing].location === room)
-                    items.push(world.things[thing].description);
-            });
+        let items = world.things
+                            .filter(x => x.location === room)
+                                .map(thing => thing.description);
         return items.map(item => `${preface}${item}${coda}`);
     },
     "travel": function(place) {
             location = place;
             if(world.rooms[place]) {
-                active = place;
-            return select('describe').text;
+                active = 'look';
+            return select(place).text;
         }
     },
     "replace": function() {
@@ -39,33 +38,41 @@ let functions = {
     }
 };
 
+let start = () => {
+    return select(world.start.command);
+};
+
 let select = (selected) => {
         selected = selected.toLowerCase();
+        active = active ? `${active}&${selected}` : selected;
 
-        let returns;
+        console.log(active);
+        let returns = [];
 
-        if(active &&
-           world.things[selected] &&
-           world.things[selected].location === location &&
-           world.things[selected].actions[active]) {
-               returns = runActions(world.things[selected].actions[active]);
-        }
+        let things = world.things.filter(x => x.location === location);
 
-        if(returns){
+        things.forEach(thing => {
+            let result = runActions(thing.actions[active]);
+            console.log("RESULT", result);
+            if(result) returns = returns.concat(result);
+        });
+        console.log("RETURNS", returns);
+        if(returns.length){
             active = '';
             return packageData(returns);
         }
 
-        if(world.rooms[location].actions[selected]) {
-            returns = runActions(world.rooms[location].actions[selected]);
+        if(world.rooms[location].actions[active]) {
+            returns = runActions(world.rooms[location].actions[active]);
         }
 
-        if(!returns) active = selected;
+        if(returns.length || directives.includes(active) || active.includes('&')) active = '';
 
         return packageData(returns);
 };
 
 let runActions = (actions) => {
+    if(!actions) return;
     let returns = [];
     actions.forEach(action => {
         if(functions[action.function]) {
@@ -92,4 +99,4 @@ let packageData = (returns) => {
             };
 };
 
-module.exports = { select }
+module.exports = { select, start }

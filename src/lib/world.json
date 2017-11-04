@@ -1,8 +1,18 @@
 {
+    "start": {
+        "location": "clearing",
+        "command": "look&clearing",
+        "directives": [
+            "north",
+            "south",
+            "east",
+            "west"
+        ]
+    },
     "rooms": {
         "clearing": {
             "actions": {
-                "describe": [
+                "look&clearing": [
                     {
                         "function": "say",
                         "params":["This is an open space just south of the mouth of an ominous cave."]
@@ -22,7 +32,7 @@
         },
         "cave": {
             "actions":{
-                "describe": [
+                "look&cave": [
                     {
                         "conditions": { "cave_in": false },
                         "function": "say",
@@ -31,7 +41,7 @@
                     {
                         "conditions": { "cave_in": true },
                         "function": "say",
-                        "params": [ "The cave is totally dark after the cave in. You cannot escape." ]
+                        "params": [ "The cave is totally dark after the cave-in. You cannot escape." ]
                     }
                 ],
                 "south": [
@@ -54,16 +64,17 @@
             }
         }
     },
-    "things": {
-        "lighter": {
+    "things": [
+        {
+            "name": "lighter",
             "actions": {
-                "hand": [
+                "hand&lighter": [
                     {
                         "function": "say",
                         "params": ["You pick up the lighter, but it slips out of your hand."]
                     }
                 ],
-                "look": [
+                "look&lighter": [
                     {
                         "function": "say",
                         "params": ["It's a sleek looking oil lighter. It seems to be in great condition."]
@@ -73,12 +84,13 @@
             "location": "clearing",
             "description": "a lighter"
         },
-        "idol": {
+        {
+            "name": "idol",
             "actions": {},
             "location": "cave",
             "description": "a stone idol"
         }
-    },
+    ],
     "conditions": {
         "cave_in": false
     },

@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="console-style console-header col-8 text-center">
-            <span class="clickable">{{status.location[0].toUpperCase()+status.location.slice(1)}}</span>
+            <span class="clickable" (click)="select($event)">{{status.location[0].toUpperCase()+status.location.slice(1)}}</span>
         </div>
     </div>
     <div class="row justify-content-center">
