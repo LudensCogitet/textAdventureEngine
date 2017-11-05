@@ -56,14 +56,9 @@ let select = (selected) => {
             console.log("RESULT", result);
             if(result) returns = returns.concat(result);
         });
-        console.log("RETURNS", returns);
-        if(returns.length){
-            active = '';
-            return packageData(returns);
-        }
 
         if(world.rooms[location].actions[active]) {
-            returns = runActions(world.rooms[location].actions[active]);
+            returns = returns.concat(runActions(world.rooms[location].actions[active]));
         }
 
         if(returns.length || directives.includes(active) || active.includes('&')) active = '';
