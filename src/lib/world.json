@@ -1,16 +1,26 @@
 {
     "start": {
-        "location": "clearing",
-        "command": "look&clearing",
         "directives": [
             "north",
             "south",
             "east",
-            "west"
+            "west",
+            "inventory"
         ]
     },
     "rooms": {
+        "anywhere": {
+            "actions": {
+                "inventory": [
+                    {
+                        "function": "items",
+                        "params": ["player", "You have ", "."]
+                    }
+                ]
+            }
+        },
         "clearing": {
+            "description": "Clearing",
             "actions": {
                 "look&clearing": [
                     {
@@ -31,6 +41,7 @@
             }
         },
         "cave": {
+            "description": "A Dark and Spooky [Cavern|cave]",
             "actions":{
                 "look&cave": [
                     {
@@ -39,9 +50,14 @@
                         "params":[ "The interior of the cave is damp and covered with a strange red moss. Sunlight streams in from the cave mouth to the south." ]
                     },
                     {
-                        "conditions": { "cave_in": true },
+                        "conditions": { "moved_boulder": true },
                         "function": "say",
-                        "params": [ "The cave is totally dark after the cave-in. You cannot escape." ]
+                        "params":[ "The interior of the cave is damp and covered with a strange red moss. Sunlight streams in from the cave mouth to the south. The huge boulder you chucked aside is against one wall." ]
+                    },
+                    {
+                        "conditions": { "cave_in": true, "moved_boulder": false },
+                        "function": "say",
+                        "params": [ "The cave is totally dark after the cave-in. You (probably) cannot escape. Check your inventory." ]
                     }
                 ],
                 "south": [
@@ -56,9 +72,26 @@
                         "params": [["cave_in", true]]
                     },
                     {
-                        "conditions": { "cave_in": true },
+                        "conditions": { "cave_in": true, "moved_boulder": false },
                         "function": "say",
                         "params": ["Boulders block your way."]
+                    },
+                    {
+                        "conditions": { "cave_in": true, "moved_boulder": true },
+                        "function": "travel",
+                        "params": ["clearing"]
+                    }
+                ],
+                "hand&boulders": [
+                    {
+                        "conditions": {"cave_in": true, "moved_boulder": false},
+                        "function": "say",
+                        "params": ["Turns out you're incredibly strong, and you move the rocks out of the way."]
+                    },
+                    {
+                        "conditions": {"cave_in": true, "moved_boulder": false},
+                        "function": "set",
+                        "params": [["moved_boulder", true]]
                     }
                 ]
             }
@@ -71,7 +104,11 @@
                 "hand&lighter": [
                     {
                         "function": "say",
-                        "params": ["You pick up the [lol|lighter], but it slips out of your hand."]
+                        "params": ["You pick up the lighter."]
+                    },
+                    {
+                        "function": "take",
+                        "params": ["lighter"]
                     }
                 ],
                 "look&lighter": [
@@ -92,7 +129,8 @@
         }
     ],
     "conditions": {
-        "cave_in": false
-    },
-    "player": {}
+        "location": "clearing",
+        "cave_in": false,
+        "moved_boulder": false
+    }
 }

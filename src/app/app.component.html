@@ -1,7 +1,10 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="console-style console-header col-8 text-center">
-            <span class="clickable" (click)="select($event)">{{status.location[0].toUpperCase()+status.location.slice(1)}}</span>
+            <app-click-word #heading
+                        [text]="this.status.location"
+                        (select)="select($event)">
+            </app-click-word>
         </div>
     </div>
     <div class="row justify-content-center">
@@ -21,24 +24,20 @@
         <button (click)="select('North')" class="btn btn-lg btn-primary">
             <i class="fa fa-arrow-up" aria-hidden="true"></i>
         </button>
-        <button (click)="select('Hand')" class="btn btn-lg btn-primary">
-            <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
+        <button (click)="select('Look')" class="btn btn-lg btn-primary">
+            <i class="fa fa-eye" aria-hidden="true"></i>
         </button>
     </div>
     <div class="row justify-content-center">
         <button (click)="select('West')" class="btn btn-lg btn-primary">
             <i class="fa fa-arrow-left" aria-hidden="true"></i>
         </button>
-        <button (click)="select('Look')" class="btn btn-lg btn-primary">
-            <i class="fa fa-eye" aria-hidden="true"></i>
+        <button (click)="select('South')" class="btn btn-lg btn-primary">
+            <i class="fa fa-arrow-down" aria-hidden="true"></i>
         </button>
         <button (click)="select('East')" class="btn btn-lg btn-primary">
             <i class="fa fa-arrow-right" aria-hidden="true"></i>
         </button>
     </div>
-    <div class="row justify-content-center">
-        <button (click)="select('South')" class="btn btn-lg btn-primary">
-            <i class="fa fa-arrow-down" aria-hidden="true"></i>
-        </button>
-    </div>
+    <div>{{status.inventory}}</div>
 </div>

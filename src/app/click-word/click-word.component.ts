@@ -13,19 +13,22 @@ export class ClickWordComponent implements OnInit {
     constructor() { }
 
     ngOnInit() {
-        if(!this.text.match(/\[.+\|.+\]/)) {
-            this.display = this.text;
-            this.name = this.text;
+        this.update(this.text);
+    }
+
+    public update(text) {
+        if(!text.match(/\[.+\|.+\]/)) {
+            this.display = text;
+            this.name = text;
         }
         else {
-            let sides = this.text.split("|");
+            let sides = text.split("|");
             this.display = sides[0].replace("[", "");
             this.name = sides[1].replace("]", "");
         }
     }
 
     public clicked() {
-        console.log(this.name);
         this.select.emit(this.name);
     }
 
