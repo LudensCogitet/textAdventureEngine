@@ -31,8 +31,8 @@ export class AppComponent {
       this.printToFeed(data.text);
   }
 
-  public select(event) {
-    let command = typeof event === "string" ? event : event.originalTarget.innerText.replace(/\W+/g, "");
+  public select(text) {
+    let command = text.replace(/\W+/g, "");
     this.update(fate.select(command));
   }
 }

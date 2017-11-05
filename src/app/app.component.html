@@ -7,11 +7,10 @@
     <div class="row justify-content-center">
         <div #console class="console console-style col-8" [scrollTop]="console.scrollHeight">
             <div class="console-line" *ngFor="let line of feed">
-                <span class="clickable"
-                      *ngFor="let word of line"
-                      (click)="select($event)">
-                    {{word}}
-                </span>
+                <app-click-word *ngFor="let word of line"
+                            [text]="word"
+                            (select)="select($event)">
+                </app-click-word>
             </div>
         </div>
     </div>

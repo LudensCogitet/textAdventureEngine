@@ -16,12 +16,3 @@
 .console-line {
     margin-bottom: 10px;
 }
-
-.clickable {
-    cursor: pointer !important;
-}
-
-.clickable:hover {
-    color: white;
-    font-weight: bold;
-}

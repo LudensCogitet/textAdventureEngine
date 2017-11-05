@@ -71,7 +71,7 @@
                 "hand&lighter": [
                     {
                         "function": "say",
-                        "params": ["You pick up the lighter, but it slips out of your hand."]
+                        "params": ["You pick up the [lol|lighter], but it slips out of your hand."]
                     }
                 ],
                 "look&lighter": [
