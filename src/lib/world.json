@@ -13,10 +13,21 @@
             "actions": {
                 "inventory": [
                     {
-                        "steps":[
+                        "steps": [
                             {
                                 "function": "items",
                                 "params": ["player", "You have ", "."]
+                            }
+                        ]
+                    }
+                ],
+                "__tick__": [
+                    {
+                        "conditions": {"turns": {"gt": 10}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["It has been more than 10 turns."]
                             }
                         ]
                     }
@@ -57,7 +68,7 @@
             "actions":{
                 "look&cave": [
                     {
-                        "conditions": { "cave_in": false },
+                        "conditions": { "cave_in": {"eq": false}},
                         "steps": [
                                 {
                                     "function": "say",
@@ -66,7 +77,7 @@
                         ]
                     },
                     {
-                        "conditions": { "moved_boulder": true },
+                        "conditions": { "moved_boulder": {"eq": true}},
                         "steps": [
                             {
                                 "function": "say",
@@ -75,7 +86,7 @@
                         ]
                     },
                     {
-                        "conditions": { "cave_in": true, "moved_boulder": false },
+                        "conditions": { "cave_in": {"eq": true}, "moved_boulder": {"eq": false}},
                         "steps": [
                             {
                                 "function": "say",
@@ -86,7 +97,7 @@
                 ],
                 "south": [
                     {
-                        "conditions": { "cave_in": false },
+                        "conditions": { "cave_in": {"eq": false}},
                         "steps": [
                             {
                                 "function": "say",
@@ -99,7 +110,7 @@
                         ]
                     },
                     {
-                        "conditions": { "cave_in": true, "moved_boulder": false },
+                        "conditions": { "cave_in": {"eq": true}, "moved_boulder": {"eq": false}},
                         "steps": [
                             {
                                 "function": "say",
@@ -108,7 +119,7 @@
                         ]
                     },
                     {
-                        "conditions": { "cave_in": true, "moved_boulder": true },
+                        "conditions": { "cave_in": {"eq": true}, "moved_boulder": {"eq": true}},
                         "steps": [
                             {
                                 "function": "travel",
@@ -119,7 +130,7 @@
                 ],
                 "hand&boulders": [
                     {
-                        "conditions": {"cave_in": true, "moved_boulder": false},
+                        "conditions": {"cave_in": {"eq": true}, "moved_boulder": {"eq": false}},
                         "steps": [
                             {
                                 "function": "say",
@@ -177,6 +188,7 @@
     ],
     "conditions": {
         "location": "clearing",
+        "turns":    -1,
         "cave_in": false,
         "moved_boulder": false
     }

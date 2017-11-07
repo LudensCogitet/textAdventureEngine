@@ -1,6 +1,8 @@
 'use strict';
 
 let world = require('./world.json');
+let initState = JSON.stringify(world);
+
 let directives = world.start.directives;
 let active = "";
 
@@ -28,10 +30,8 @@ let functions = {
     },
     "travel": function(place) {
             world.conditions.location = place;
-            if(world.rooms[place]) {
-                active = 'look';
-            return select(place).text;
-        }
+            if(world.rooms[place])
+                return runActions(world.rooms[place].actions[`look&${place}`]);
     },
     "replace": function() {
         let currentLayer = world[arguments[0]];
@@ -54,25 +54,30 @@ let select = (selected) => {
 
         console.log(active);
         let returns = [];
-
         let things = world.things.filter(x => x.location === world.conditions.location || x.location === 'player');
 
-        things.forEach(thing => {
-            let result = runActions(thing.actions[active]);
-            console.log("RESULT", result);
-            if(result) returns = returns.concat(result);
+        ['__tick__', active].forEach(act => {
+            things.forEach(thing => {
+                let result = runActions(thing.actions[act]);
+                console.log("RESULT", result);
+                if(result) returns = returns.concat(result);
+            });
+
+            if(world.rooms[world.conditions.location].actions[act]) {
+                returns = returns.concat(runActions(world.rooms[world.conditions.location].actions[act]));
+            }
+
+            if(world.rooms["anywhere"].actions[act]) {
+                console.log("HERE", world.rooms["anywhere"].actions[act]);
+                returns = returns.concat(runActions(world.rooms["anywhere"].actions[act]));
+            }
         });
 
-        if(world.rooms[world.conditions.location].actions[active]) {
-            returns = returns.concat(runActions(world.rooms[world.conditions.location].actions[active]));
-        }
-
-        if(world.rooms["anywhere"].actions[active]) {
-            console.log("HERE", world.rooms["anywhere"].actions[active]);
-            returns = returns.concat(runActions(world.rooms["anywhere"].actions[active]));
-        }
         console.log("FINAL RETURNS", returns);
-        if(returns.length || directives.includes(active) || active.includes('&')) active = '';
+        if(returns.length || directives.includes(active) || active.includes('&')) {
+            active = '';
+            world.conditions.turns++;
+        }
 
         return packageData(returns);
 };
@@ -81,7 +86,7 @@ let runActions = (actions) => {
     if(!actions) return;
     let returns = [];
     actions.forEach(action => {
-        if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(action.conditions[condition], world.conditions[condition]))){
+        if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(condition, action.conditions[condition]))){
             action.steps.forEach(step => {
                 if(functions[step.function]) {
                     let val = functions[step.function](...step.params);
@@ -106,8 +111,23 @@ let packageData = (returns) => {
             };
 };
 
-let compareConditions = (condition, state) => {
-    return condition === state;
+let compareConditions = (condition, predicate) => {
+    let leftHandSide = world.conditions[condition];
+
+    if(predicate.hasOwnProperty('eq'))     return predicate.eq.var ?     leftHandSide === world.conditions[predicate.eq.var] :
+                                                                         leftHandSide === predicate.eq;
+
+    if(predicate.hasOwnProperty('lt'))     return predicate.lt.var ?     leftHandSide <   world.conditions[predicate.lt.var] :
+                                                                         leftHandSide <   predicate.lt;
+
+    if(predicate.hasOwnProperty('lte'))    return predicate.lte.var ?    leftHandSide <=   world.conditions[predicate.lte.var] :
+                                                                         leftHandSide <=   predicate.lte;
+
+    if(predicate.hasOwnProperty('gt'))     return predicate.gt.var ?     leftHandSide >   world.conditions[predicate.gt.var] :
+                                                                         leftHandSide >   predicate.gt;
+
+    if(predicate.hasOwnProperty('gte'))    return predicate.gte.var ?    leftHandSide >=   world.conditions[predicate.gte.var] :
+                                                                         leftHandSide >=   predicate.gte;
 }
 
 module.exports = { select, start }

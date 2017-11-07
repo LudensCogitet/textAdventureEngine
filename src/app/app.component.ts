@@ -22,6 +22,11 @@ export class AppComponent  {
       this.feed = this.feed.concat(text);
     }
 
+    private appendToFeed(text) {
+        this.feed[this.feed.length-1] = this.feed[this.feed.length-1].concat(text.split(" "));
+        console.log("\n\n", this.feed.join(" "), "\n\n");
+    }
+
     private update(data) {
       if(this.status.location !== data.status.location) {
           this.heading.update(data.status.location);
@@ -29,11 +34,17 @@ export class AppComponent  {
       }
 
       this.status = data.status;
-      this.printToFeed(data.text);
+
+      let toPrint = data.text;
+      if(this.status.active) this.appendToFeed(' ... ');
+      else if(!data.text.length) toPrint = ["You can't do that."];
+      this.printToFeed(toPrint);
     }
 
     public select(text) {
     let command = text.replace(/\W+/g, "");
+
+    this.status.active ? this.appendToFeed(command) : this.printToFeed([`?> ${command}`]);
     this.update(fate.select(command));
     }
 }
