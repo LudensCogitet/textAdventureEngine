@@ -81,12 +81,14 @@ let runActions = (actions) => {
     if(!actions) return;
     let returns = [];
     actions.forEach(action => {
-        if(functions[action.function]) {
-            if(!action.conditions || Object.keys(action.conditions).every(condition => action.conditions[condition] === world.conditions[condition])){
-                let val = functions[action.function](...action.params);
-                console.log("VAL", val);
-                if(val) returns = returns.concat(val);
-            }
+        if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(action.conditions[condition], world.conditions[condition]))){
+            action.steps.forEach(step => {
+                if(functions[step.function]) {
+                    let val = functions[step.function](...step.params);
+                    console.log("VAL", val);
+                    if(val) returns = returns.concat(val);
+                }
+            });
         }
     });
 
@@ -103,5 +105,9 @@ let packageData = (returns) => {
                  }
             };
 };
+
+let compareConditions = (condition, state) => {
+    return condition === state;
+}
 
 module.exports = { select, start }
