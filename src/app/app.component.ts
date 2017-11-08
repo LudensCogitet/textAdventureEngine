@@ -27,9 +27,21 @@ export class AppComponent  {
         console.log("\n\n", this.feed.join(" "), "\n\n");
     }
 
+    private packAliases(texts) {
+        return texts.map(text => {
+            let match = text.match(/\[(.*?)\]/g);
+            if(match) {
+                match.forEach(x => {
+                    text = text.replace(x, x.replace(/ /g, "~"));
+                });
+            }
+            return text;
+        });
+    }
+
     private update(data) {
       if(this.status.location !== data.status.location) {
-          this.heading.update(data.status.location);
+          this.heading.update(this.packAliases([data.status.location])[0]);
           this.feed = [];
       }
 
@@ -37,8 +49,7 @@ export class AppComponent  {
 
       let toPrint = data.text;
       if(this.status.active) this.appendToFeed(' ... ');
-      else if(!data.text.length) toPrint = ["You can't do that."];
-      this.printToFeed(toPrint);
+      this.printToFeed(this.packAliases(toPrint));
     }
 
     public select(text) {

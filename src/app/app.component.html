@@ -32,12 +32,16 @@
         <button (click)="select('West')" class="btn btn-lg btn-primary">
             <i class="fa fa-arrow-left" aria-hidden="true"></i>
         </button>
-        <button (click)="select('South')" class="btn btn-lg btn-primary">
-            <i class="fa fa-arrow-down" aria-hidden="true"></i>
+        <button (click)="select('Inventory')" class="btn btn-lg btn-primary">
+            <i class="fa fa-suitcase" aria-hidden="true"></i>
         </button>
         <button (click)="select('East')" class="btn btn-lg btn-primary">
             <i class="fa fa-arrow-right" aria-hidden="true"></i>
         </button>
     </div>
-    <div>{{status.inventory}}</div>
+    <div class="row justify-content-center">
+        <button (click)="select('South')" class="btn btn-lg btn-primary">
+            <i class="fa fa-arrow-down" aria-hidden="true"></i>
+        </button>
+    </div>
 </div>

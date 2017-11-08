@@ -23,8 +23,8 @@ export class ClickWordComponent implements OnInit {
         }
         else {
             let sides = text.split("|");
-            this.display = sides[0].replace("[", "");
-            this.name = sides[1].replace("]", "");
+            this.display = sides[0].replace("[", "").replace(/~/g, " ");
+            this.name = sides[1].replace("]", "").replace(/~/g, " ");
         }
     }
 

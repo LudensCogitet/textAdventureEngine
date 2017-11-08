@@ -15,6 +15,12 @@ let functions = {
             world.conditions[arguments[i][0]] = arguments[i][1];
         }
     },
+    "add": function(value, condition) {
+        world.conditions[condition] += value;
+    },
+    "subtract": function(value, condition) {
+        world.conditions[condition] -= value;
+    },
     "take": function(thing) {
         world.things.find(x => x.name === thing).location = 'player';
     },
@@ -56,7 +62,7 @@ let select = (selected) => {
         let returns = [];
         let things = world.things.filter(x => x.location === world.conditions.location || x.location === 'player');
 
-        ['__tick__', active].forEach(act => {
+        [active, '__tick__'].forEach(act => {
             things.forEach(thing => {
                 let result = runActions(thing.actions[act]);
                 console.log("RESULT", result);

@@ -20,17 +20,6 @@
                             }
                         ]
                     }
-                ],
-                "__tick__": [
-                    {
-                        "conditions": {"turns": {"gt": 10}},
-                        "steps": [
-                            {
-                                "function": "say",
-                                "params": ["It has been more than 10 turns."]
-                            }
-                        ]
-                    }
                 ]
             }
         },
@@ -57,6 +46,10 @@
                             {
                                 "function": "travel",
                                 "params": ["cave"]
+                            },
+                            {
+                                "function": "add",
+                                "params": [1, "counter"]
                             }
                         ]
                     }
@@ -64,7 +57,7 @@
             }
         },
         "cave": {
-            "description": "A Dark and Spooky [Cavern|cave]",
+            "description": "[A Dark and Spooky Cavern|cave]",
             "actions":{
                 "look&cave": [
                     {
@@ -190,6 +183,7 @@
         "location": "clearing",
         "turns":    -1,
         "cave_in": false,
-        "moved_boulder": false
+        "moved_boulder": false,
+        "counter": 0
     }
 }
