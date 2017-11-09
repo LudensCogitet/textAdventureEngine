@@ -7,8 +7,12 @@ let directives = world.start.directives;
 let active = "";
 
 let functions = {
-    "say": function(text) {
-        return text;
+    "say": function() {
+        let final = []
+        for(let i = 0; i < arguments.length; i++) {
+            final.push(arguments[i].var ? world.conditions[arguments[i].var] : arguments[i])
+        }
+        return final.join('');
     },
     "set": function() {
         for(let i = 0; i < arguments.length; i++) {
@@ -102,8 +106,12 @@ let loopThings = (things, active) => {
 let runActions = (actions) => {
     if(!actions) return;
     let returns = [];
-    actions.forEach(action => {
+    console.log("ROUTE", actions.route);
+    let resolvedActions = actions.route ? world.rooms[actions.route[0]].actions[actions.route[1]] : actions;
+
+    resolvedActions.forEach(action => {
         if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(condition, action.conditions[condition]))){
+            console.log(action);
             action.steps.forEach(step => {
                 if(functions[step.function]) {
                     let val = functions[step.function](...step.params);

@@ -70,29 +70,10 @@
                 ],
                 "south": [
                     {
-                        "conditions": {"animal": {"eq": "pig"}},
                         "steps": [
                             {
                                 "function": "say",
-                                "params": ["There's a pig here."]
-                            }
-                        ]
-                    },
-                    {
-                        "conditions": {"animal": {"eq": "cat"}},
-                        "steps": [
-                            {
-                                "function": "say",
-                                "params": ["There's a cat here."]
-                            }
-                        ]
-                    },
-                    {
-                        "conditions": {"animal": {"eq": "dog"}},
-                        "steps": [
-                            {
-                                "function": "say",
-                                "params": ["There's a dog here."]
+                                "params": ["There's a ",{"var": "animal"}," here."]
                             }
                         ]
                     }
@@ -131,6 +112,18 @@
                         ]
                     }
                 ],
+                "_cant_go_": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["You can't go that way."]
+                            }
+                        ]
+                    }
+                ],
+                "east": {"route": ["cave", "_cant_go_"]},
+                "west": {"route": ["cave", "_cant_go_"]},
                 "south": [
                     {
                         "conditions": { "cave_in": {"eq": false}},
