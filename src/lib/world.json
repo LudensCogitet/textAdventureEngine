@@ -20,6 +20,20 @@
                             }
                         ]
                     }
+                ],
+                "been5": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["It's been 5 turns."]
+                            },
+                            {
+                                "function": "dial",
+                                "params": ["animal"]
+                            }
+                        ]
+                    }
                 ]
             }
         },
@@ -50,6 +64,35 @@
                             {
                                 "function": "add",
                                 "params": [1, "counter"]
+                            }
+                        ]
+                    }
+                ],
+                "south": [
+                    {
+                        "conditions": {"animal": {"eq": "pig"}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["There's a pig here."]
+                            }
+                        ]
+                    },
+                    {
+                        "conditions": {"animal": {"eq": "cat"}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["There's a cat here."]
+                            }
+                        ]
+                    },
+                    {
+                        "conditions": {"animal": {"eq": "dog"}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["There's a dog here."]
                             }
                         ]
                     }
@@ -184,6 +227,16 @@
         "turns":    -1,
         "cave_in": false,
         "moved_boulder": false,
+        "animal": "pig",
         "counter": 0
+    },
+    "emitters":[
+        {
+            "action": "been5",
+            "fire": 5
+        }
+    ],
+    "switches":{
+        "animal": ["pig", "dog", "cat"]
     }
 }

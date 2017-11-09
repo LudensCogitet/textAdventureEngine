@@ -50,12 +50,13 @@ export class AppComponent  {
       let toPrint = data.text;
       if(this.status.active) this.appendToFeed(' ... ');
       this.printToFeed(this.packAliases(toPrint));
+      if(!this.status.active) this.printToFeed(['?>']);
     }
 
     public select(text) {
     let command = text.replace(/\W+/g, "");
 
-    this.status.active ? this.appendToFeed(command) : this.printToFeed([`?> ${command}`]);
+    this.appendToFeed(command);
     this.update(fate.select(command));
     }
 }

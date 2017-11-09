@@ -12,7 +12,7 @@ let functions = {
     },
     "set": function() {
         for(let i = 0; i < arguments.length; i++) {
-            world.conditions[arguments[i][0]] = arguments[i][1];
+            world.conditions[arguments[i][0]] = arguments[i][1].var ? world.conditions[arguments[i][1].var] : arguments[i][1];
         }
     },
     "add": function(value, condition) {
@@ -47,6 +47,11 @@ let functions = {
                 break;
             } else currentLayer = currentLayer[arguments[i]];
         }
+    },
+    "dial": function(name) {
+        let currentIndex = world.switches[name].indexOf(world.conditions[name]);
+        let newIndex = currentIndex + 1 === world.switches[name].length ? 0 : currentIndex + 1;
+        world.conditions[name] = world.switches[name][newIndex];
     }
 };
 
@@ -58,35 +63,41 @@ let select = (selected) => {
         selected = selected.toLowerCase();
         active = active ? `${active}&${selected}` : selected;
 
-        console.log(active);
-        let returns = [];
         let things = world.things.filter(x => x.location === world.conditions.location || x.location === 'player');
+        things.push(world.rooms[world.conditions.location]);
+        things.push(world.rooms["anywhere"]);
 
-        [active, '__tick__'].forEach(act => {
-            things.forEach(thing => {
-                let result = runActions(thing.actions[act]);
-                console.log("RESULT", result);
-                if(result) returns = returns.concat(result);
-            });
+        let returns = loopThings(things, active);
 
-            if(world.rooms[world.conditions.location].actions[act]) {
-                returns = returns.concat(runActions(world.rooms[world.conditions.location].actions[act]));
-            }
-
-            if(world.rooms["anywhere"].actions[act]) {
-                console.log("HERE", world.rooms["anywhere"].actions[act]);
-                returns = returns.concat(runActions(world.rooms["anywhere"].actions[act]));
-            }
-        });
-
-        console.log("FINAL RETURNS", returns);
         if(returns.length || directives.includes(active) || active.includes('&')) {
             active = '';
             world.conditions.turns++;
+            returns = returns.concat(checkEmitters(things));
+            returns = returns.concat(loopThings(things, '__tick__'));
         }
 
         return packageData(returns);
 };
+
+let checkEmitters = (things) => {
+    let returns = []
+    world.emitters.forEach(emitter => {
+        if(world.conditions.turns !== 0 && world.conditions.turns % emitter.fire === 0)
+            returns = returns.concat(loopThings(things, emitter.action));
+    });
+    return returns;
+};
+
+let loopThings = (things, active) => {
+    let returns = [];
+    things.forEach(thing => {
+        let result = runActions(thing.actions[active]);
+        console.log("RESULT", result);
+        if(result) returns = returns.concat(result);
+    });
+
+    return returns;
+}
 
 let runActions = (actions) => {
     if(!actions) return;
