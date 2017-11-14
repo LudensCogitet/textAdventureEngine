@@ -1,0 +1,35 @@
+{
+    "start": {
+        "directives": [
+            "north",
+            "south",
+            "east",
+            "west",
+            "inventory"
+        ]
+    },
+    "conditions": {
+        "location": "start",
+        "turns": -1
+    },
+    "switches": {},
+    "emitters": [],
+    "things": [],
+    "rooms": {
+        "start": {
+            "description": "[The First Room|start]",
+            "actions": {
+                "look&start": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["This is the first room."]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

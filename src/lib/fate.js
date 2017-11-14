@@ -1,6 +1,6 @@
 'use strict';
 
-let world = require('./world.json');
+let world = require('./space_pod.json');
 let initState = JSON.stringify(world);
 
 let directives = world.start.directives;
@@ -66,11 +66,14 @@ let start = () => {
 let select = (selected) => {
         selected = selected.toLowerCase();
         active = active ? `${active}&${selected}` : selected;
-
+        console.log(world);
         let things = world.things.filter(x => x.location === world.conditions.location || x.location === 'player');
-        things.push(world.rooms[world.conditions.location]);
-        things.push(world.rooms["anywhere"]);
+        if(world.rooms[world.conditions.location])
+            things.push(world.rooms[world.conditions.location]);
+        if(world.rooms["anywhere"])
+            things.push(world.rooms["anywhere"]);
 
+        console.log(things);
         let returns = loopThings(things, active);
 
         if(returns.length || directives.includes(active) || active.includes('&')) {
@@ -153,6 +156,20 @@ let compareConditions = (condition, predicate) => {
 
     if(predicate.hasOwnProperty('gte'))    return predicate.gte.var ?    leftHandSide >=   world.conditions[predicate.gte.var] :
                                                                          leftHandSide >=   predicate.gte;
-}
+
+    if(predicate.hasOwnProperty('mu')) {
+        if(leftHandSide === 0)
+            return false;
+
+        if(predicate.mu.var) {
+            if(predicate.mu.var === 0) return false;
+        } else {
+            if(predicate.mu === 0) return false;
+        }
+
+        return predicate.mu.var ?       leftHandSide % world.conditions[predicate.mu.var] === 0 :
+                                        leftHandSide % predicate.mu === 0
+    }
+};
 
 module.exports = { select, start }

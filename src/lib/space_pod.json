@@ -1,0 +1,106 @@
+{
+    "start": {
+        "directives": [
+            "north",
+            "south",
+            "east",
+            "west",
+            "inventory"
+        ]
+    },
+    "conditions": {
+        "location": "start",
+        "turns": -1,
+
+        "game_over_message": ""
+    },
+    "switches": {},
+    "emitters": [
+        {
+            "action": "game_over_suffication",
+            "fire": 10
+        }
+    ],
+    "things": [],
+    "rooms": {
+        "anywhere": {
+            "actions": {
+                "__tick__": [
+                    {
+                        "conditions": {"turns": {"mu": 5}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["It has been 5 turns."]
+                            }
+                        ]
+                    }
+                ],
+                "game_over_suffication": [
+                    {
+                        "steps": [
+                            {
+                                "function": "set",
+                                "params": [["game_over_message", "You've run out of time. As the air thins you become too dizzy and confused to keep it together. Eventually is just sit down and drift off to sleep, and soon death."]]
+                            },
+                            {
+                                "function": "travel",
+                                "params": ["game_over"]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "game_over": {
+                "description": "Game Over",
+                "actions": {
+                    "look&game_over": [
+                        {
+                            "steps": [
+                                {
+                                    "function": "say",
+                                    "params": [{"var": "game_over_message"}]
+                                }
+                            ]
+                        }
+                    ],
+                    "restart": [
+                        {
+                            "steps": [
+                                {
+                                    "function": "reload",
+                                    "params": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+        },
+        "start": {
+            "description": "[The First Room|start]",
+            "actions": {
+                "look&start": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["This is the first room."]
+                            }
+                        ]
+                    }
+                ],
+                "look&south": [
+                    {
+                        "steps": [
+                            {
+                                "function": "travel",
+                                "params": ["game_over"]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
