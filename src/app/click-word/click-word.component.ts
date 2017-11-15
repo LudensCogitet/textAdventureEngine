@@ -29,7 +29,7 @@ export class ClickWordComponent implements OnInit {
     }
 
     public clicked() {
-        this.select.emit(this.name);
+        this.select.emit({display: this.display, name: this.name});
     }
 
     @Output() select:EventEmitter<any> = new EventEmitter();

@@ -1,6 +1,6 @@
 'use strict';
 
-let world = require('./space_pod.json');
+let world = require('./Escape1.json');
 let initState = JSON.stringify(world);
 
 let directives = world.start.directives;
@@ -10,7 +10,18 @@ let functions = {
     "say": function() {
         let final = []
         for(let i = 0; i < arguments.length; i++) {
-            final.push(arguments[i].var ? world.conditions[arguments[i].var] : arguments[i])
+            let toPush;
+            if(arguments[i].var) {
+                toPush = world.conditions[arguments[i].var];
+            }
+            else if(arguments[i].if && Object.keys(arguments[i].if.conditions).every(condition => compareConditions(condition, arguments[i].if.conditions[condition]))) {
+                toPush = arguments[i].if.then;
+            }
+            else {
+                toPush = arguments[i];
+            }
+
+            final.push(toPush);
         }
         return final.join('');
     },
@@ -113,9 +124,15 @@ let runActions = (actions) => {
     let resolvedActions = actions.route ? world.rooms[actions.route[0]].actions[actions.route[1]] : actions;
 
     resolvedActions.forEach(action => {
-        if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(condition, action.conditions[condition]))){
-            console.log(action);
-            action.steps.forEach(step => {
+        let toRun;
+
+        if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(condition, action.conditions[condition])))
+            toRun = action.steps;
+        else if(action.else)
+            toRun = action.else.steps;
+
+        if(toRun) {
+            toRun.forEach(step => {
                 if(functions[step.function]) {
                     let val = functions[step.function](...step.params);
                     console.log("VAL", val);
@@ -144,6 +161,9 @@ let compareConditions = (condition, predicate) => {
 
     if(predicate.hasOwnProperty('eq'))     return predicate.eq.var ?     leftHandSide === world.conditions[predicate.eq.var] :
                                                                          leftHandSide === predicate.eq;
+
+    if(predicate.hasOwnProperty('ne'))     return predicate.ne.var ?     leftHandSide !== world.condition[predicate.ne.var] :
+                                                                         leftHandSide !== predicate.ne;
 
     if(predicate.hasOwnProperty('lt'))     return predicate.lt.var ?     leftHandSide <   world.conditions[predicate.lt.var] :
                                                                          leftHandSide <   predicate.lt;

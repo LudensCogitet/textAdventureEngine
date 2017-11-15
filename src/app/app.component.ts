@@ -53,10 +53,11 @@ export class AppComponent  {
       if(!this.status.active) this.printToFeed(['?>']);
     }
 
-    public select(text) {
-    let command = text.replace(/\W+/g, "");
+    public select(command) {
+        let name = command.name ? command.name.replace(/\W+/g, "") : command;
+        let display = command.display ? command.display : command;
 
-    this.appendToFeed(command);
-    this.update(fate.select(command));
+        this.appendToFeed(display);
+        this.update(fate.select(name));
     }
 }

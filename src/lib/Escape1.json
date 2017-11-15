@@ -1,0 +1,109 @@
+{
+    "start": {
+        "directives": [
+            "north",
+            "south",
+            "east",
+            "west",
+            "inventory"
+        ]
+    },
+    "conditions": {
+        "location": "cell",
+        "turns": -1,
+
+        "got_cell_rock": false,
+        "got_cell_lamp": false
+    },
+    "switches": {},
+    "emitters": [],
+    "things": [
+        {
+            "name": "rock",
+            "actions": {},
+            "location": "none",
+            "description": "a rock"
+        }
+    ],
+    "rooms": {
+        "anywhere": {
+            "actions": {
+                "inventory": [
+                    {
+                        "steps": [
+                            {
+                                "function": "items",
+                                "params": ["player", "You have ", "."]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "cell": {
+            "description": "Cell",
+            "actions": {
+                "look&cell": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["Your cell is barely more than a damp debris littered alcove scooped out of the rock wall of a wide, low [passage]. Iron [bars|cell_bars] are set into the floor and ceiling of the opening before you to the [west]. The skeletal [remains|cell_skeleton] of an unfortunate former occupant sit against the [south] wall.", {"if": {"conditions": {"got_cell_lamp": {"eq": false}}, "then": [" An oil [lamp] hung from a peg on the passage wall provides a grim and meager radiance."]}}]
+                            }
+                        ]
+                    }
+                ],
+                "look&debris": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["The floor is strewn with [rocks|rock], sand, and other debris. It's clear this cell is not intended to be even basically livable."]
+                            }
+                        ]
+                    }
+                ],
+                "look&rock": [
+                    {
+                        "conditions": {"got_cell_rock": {"eq": false}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["One rock in particular catches your eye. Sharp on one end, flat on the other. A fine, improvised tool any Neanderthal would be jealous of."]
+                            }
+                        ]
+                    }
+                ],
+                "hand&rock": [
+                    {
+                        "conditions": {"got_cell_rock": {"eq": false}},
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["You pick up the rock."]
+                            },
+                            {
+                                "function": "set",
+                                "params": [["got_cell_rock", true]]
+                            },
+                            {
+                                "function": "take",
+                                "params": ["rock"]
+                            }
+                        ]
+                    }
+                ],
+                "look&passage": [
+                    {
+                        "steps": [
+                            {
+                                "function": "say",
+                                "params": ["The passage slopes southward, down into darkness and toward the sound of the sea."]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
