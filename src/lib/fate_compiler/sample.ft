@@ -1,0 +1,136 @@
+<describe "start">
+    <directives>
+        north, south, east, west, inventory
+    </directives>
+    <location "cell">
+</describe>
+<describe "conditions">
+    cell_got_lamp = false,
+    cell_got_rock = false,
+    cell_opened_bars = false
+</describe>
+<describe "thing">
+    <name "rock">
+    <description "a rock">
+    <location "cell">
+    <actions>
+    </actions>
+</describe>
+<describe "thing">
+    <name "oil_lamp">
+    <description "a depressingly dim oil lamp">
+    <location "cell">
+    <actions>
+    </actions>
+</describe>
+<describe "room">
+    <name "anywhere">
+    <description "anywhere">
+    <actions>
+        <action "inventory">
+            <steps>
+                <list>
+                    <location "player">
+                    <before "You have ">
+                    <after ".">
+                </list>
+            </steps>
+        </action>
+    </actions>
+</describe>
+<describe "room">
+    <name "cell">
+    <description "Cell">
+    <actions>
+        <action "look&cell">
+            <steps>
+                <say>Your cell is barely more than a damp debris littered alcove scooped out of the rock wall of a wide, low passage.</say>
+                <say>
+                    [Iron bars|cell_bars] are set into the floor and ceiling of the opening before you to the west.
+                    <if(cell_opened_bars==true)>A loose bar has been torn out of place, allowing just enough room to squeeze through.<fi>
+                </say>
+                <say>The skeletal [remains|cell_skeleton] of an unfortunate former occupant sit against the south wall.</say>
+                <say><if(cell_got_lamp==false)>An [oil lamp|oil_lamp] hung from a peg on the passage wall provides a grim and meager radiance.<fi></say>
+            </steps>
+        </action>
+        <action "look&debris">
+            <steps>
+                <say>
+                    The floor is strewn with [rocks,|rock] sand, and other debris. It's clear this cell is not intended to be even basically livable.
+                </say>
+            </steps>
+        </action>
+        <action "hand&debris">
+            <steps>
+                <say>
+                    You grasp large handfuls of sand and gravel and throw them in the air, hooting like a cave man.
+                </say>
+            </steps>
+        </action>
+        <action "look&rock">
+            <steps if(cell_got_rock == false)>
+                <say>
+                    One rock in particular catches your eye. Sharp on one end, flat on the other. A fine improvised tool any Neanderthal would be jealous of.
+                </say>
+            </steps>
+        </action>
+        <action "hand&rock">
+            <steps if(cell_got_rock == false)>
+                <say>You pick up the rock.</say>
+                <set>cell_got_rock = true</set>
+                <take>rock</take>
+            </steps>
+        </action>
+        <action "rock&cell_bars">
+            <steps if(cell_got_rock == true)>
+                <say>
+                    Grasping the rock by the flat end, you're able to dig away at the soft stone surrounding the bottom of one of the bars.
+                    Several minutes and one sore arm later, you pull the bar out of place.
+                </say>
+                <set>cell_opened_bars = true</set>
+            </steps>
+        </action>
+        <action "look&passage">
+            <steps>
+                <say>
+                    The path slopes significantly. To the south: down into darkness and toward the sound of the sea. To the north: up, also into darkness, but also into silence.
+                </say>
+            </steps>
+        </action>
+        <action "hand&oil_lamp">
+            <steps if(cell_opened_bars == false)>
+                <say>
+                    You wish you could take the oil lamp. Sadly you are a prisoner and there are iron bars in the way, remember?
+                </say>
+            </steps>
+            <steps if(cell_opened_bars == true)>
+                <say>
+                    You take the oil lamp, reasoning that, in a subterranean tunnel, a grim and meager radiance is better than no radiance at all.
+                </say>
+                <take>oil_lamp</take>
+                <set>cell_got_lamp = true</set>
+            </steps>
+        </action>
+        <action "south">
+            <steps if(cell_opened_bars == true)>
+                <travel>test_room</travel>
+            </steps>
+        </action>
+    </actions>
+</describe>
+<describe "room">
+    <name "test_room">
+    <description "Just another room">
+    <actions>
+        <action "look&test_room">
+            <steps>
+                <say>This is just a test room</say>
+            </steps>
+        </action>
+        <action "north">
+            <steps>
+                <travel>cell</travel>
+            </steps>
+        </action>
+    </actions>
+</describe>

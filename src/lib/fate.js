@@ -1,21 +1,26 @@
 'use strict';
 
-let world = require('./Escape1.json');
+let world = require('./fate_compiler/compiled.json');
 let initState = JSON.stringify(world);
-
+console.log(initState);
 let directives = world.start.directives;
 let active = "";
 
 let functions = {
     "say": function() {
-        let final = []
+        let final = [];
+
         for(let i = 0; i < arguments.length; i++) {
             let toPush;
             if(arguments[i].var) {
                 toPush = world.conditions[arguments[i].var];
             }
-            else if(arguments[i].if && Object.keys(arguments[i].if.conditions).every(condition => compareConditions(condition, arguments[i].if.conditions[condition]))) {
-                toPush = arguments[i].if.then;
+            else if(arguments[i].if) {
+                if(Object.keys(arguments[i].if.conditions).every(condition => compareConditions(condition, arguments[i].if.conditions[condition]))) {
+                    console.log("CONDITIONS MET");
+                    console.log(arguments[i]);
+                    toPush = arguments[i].if.then;
+                }
             }
             else {
                 toPush = arguments[i];
@@ -26,6 +31,7 @@ let functions = {
         return final.join('');
     },
     "set": function() {
+        console.log("SET ARGU",arguments);
         for(let i = 0; i < arguments.length; i++) {
             world.conditions[arguments[i][0]] = arguments[i][1].var ? world.conditions[arguments[i][1].var] : arguments[i][1];
         }
@@ -42,7 +48,7 @@ let functions = {
     "drop": function(thing) {
         world.things.find(x => x.name === thing).location = world.conditions.location;
     },
-    "items": function(room, preface, coda) {
+    "list": function(room, preface, coda) {
         let items = world.things
                             .filter(x => x.location === room)
                                 .map(thing => thing.description);

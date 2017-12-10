@@ -55,7 +55,11 @@ export class AppComponent  {
 
     public select(command) {
         let name = command.name ? command.name.replace(/\W+/g, "") : command;
-        let display = command.display ? command.display : command;
+        let display = command;
+        if(command.display) {
+            display = command.display.replace(/ /g, "_").replace(/\W+/g, "").replace('_', ' ');
+        }
+
 
         this.appendToFeed(display);
         this.update(fate.select(name));
