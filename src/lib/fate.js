@@ -57,8 +57,17 @@ let functions = {
     },
     "travel": function(place) {
             world.conditions.location = place;
-            if(world.rooms[place])
-                return runActions(world.rooms[place].actions[`look&${place}`]);
+            if(world.rooms[place]) {
+                let actions = world.rooms[place].actions.filter(x => !x.conditions || Object.keys(x.conditions).every(condition => compareConditions(condition, x.conditions[condition])));
+                let returns = [];
+
+                actions.forEach(actionsGroup => {
+                    let result = runActions(actionsGroup.actions[`look&${place}`]);
+                    if(result) returns = returns.concat(result);
+                });
+
+                return returns;
+            }
     },
     "replace": function() {
         let currentLayer = world[arguments[0]];
@@ -115,9 +124,13 @@ let checkEmitters = (things) => {
 let loopThings = (things, active) => {
     let returns = [];
     things.forEach(thing => {
-        let result = runActions(thing.actions[active]);
-        console.log("RESULT", result);
-        if(result) returns = returns.concat(result);
+        console.log("THING",thing);
+        let actionsGroups = thing.actions.filter(x => !x.conditions || Object.keys(x.conditions).every(condition => compareConditions(condition, x.conditions[condition])));
+        actionsGroups.forEach(actions => {
+            let result = runActions(actions.actions[active]);
+            console.log("RESULT", result);
+            if(result) returns = returns.concat(result);
+        });
     });
 
     return returns;

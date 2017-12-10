@@ -13,20 +13,16 @@
     <name "rock">
     <description "a rock">
     <location "cell">
-    <actions>
-    </actions>
 </describe>
 <describe "thing">
     <name "oil_lamp">
     <description "a depressingly dim oil lamp">
     <location "cell">
-    <actions>
-    </actions>
 </describe>
 <describe "room">
     <name "anywhere">
     <description "anywhere">
-    <actions>
+    <actions if(cell_got_lamp == false)>
         <action "inventory">
             <steps>
                 <list>
@@ -34,6 +30,13 @@
                     <before "You have ">
                     <after ".">
                 </list>
+            </steps>
+        </action>
+    </actions>
+    <actions>
+        <action "inventory">
+            <steps>
+                <say>NO!</say>
             </steps>
         </action>
     </actions>

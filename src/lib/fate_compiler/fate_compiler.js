@@ -161,54 +161,68 @@ let compileSteps = (data, index) => {
 };
 
 let compileActions = (data, index) => {
-    let compiledActions = {};
+    let compiledActionsGroups = [];
+    if(!data.match('</actions>')) return compiledActionsGroups;
 
-    let actions = parseTag('actions', 'closing')(data);
+    let actionsGroups = data.split('</actions>');
+    console.log("ACTION GROUPS",actionsGroups);
+    actionsGroups.forEach(actions => {
+        let compiledActions = {actions:{}};
+        let ifClause = actions.match(/<actions if\(([\s\S]+?)\)>/i);
+        if(ifClause) {
+            let content = ifClause[1].trim();
+            if(content.length < 1) return;
+            checkTag(ifClause, 'conditional actions', index, 1);
 
-    if(!actions) return {};
+            compiledActions.conditions = compileConditional(content, index);
+        }
 
-    actions = actions[1].split('</action>');
+        actions = ifClause ? actions.slice(actions.indexOf(ifClause[0])).replace(ifClause[0], '') : actions.slice(actions.indexOf('<actions>')).replace('<actions>', '');
 
-    actions.forEach(action => {
-        action = action.trim();
-        if(action.length < 1) return;
+        actions = actions.split('</action>');
+        console.log("ACTIONS", actions);
+        actions.forEach(action => {
+            action = action.trim();
+            if(action.length < 1) return;
+            console.log("ACTION\n\n", action);
+            let tag = parseTag('action','single')(action);
+            checkTag(tag, "action", index, 1);
+            let name = tag[1];
+            compiledActions.actions[name] = [];
 
-        let tag = parseTag('action','single')(action);
-        checkTag(tag, "action", index, 1);
-        let name = tag[1];
-        compiledActions[name] = [];
+            let stepGroups = action.replace(tag[0],'').split('</steps>');
+            console.log(name);
+            stepGroups.forEach(stepGroup => {
+                stepGroup = stepGroup.trim();
 
-        let stepGroups = action.replace(tag[0],'').split('</steps>');
-        console.log(name);
-        stepGroups.forEach(stepGroup => {
-            stepGroup = stepGroup.trim();
+                if(stepGroup.length < 1) return;
 
-            if(stepGroup.length < 1) return;
+                let compiledStepGroup = {};
 
-            let compiledStepGroup = {};
+                let ifClause = stepGroup.match(/<steps if\(([\s\S]+?)\)>/i);
+                if(ifClause) {
+                    let content = ifClause[1].trim();
+                    if(content.length < 1) return;
+                    checkTag(ifClause, 'conditional steps', index, 1);
 
-            let ifClause = stepGroup.match(/<steps if\(([\s\S]+?)\)>/i);
-            if(ifClause) {
-                let content = ifClause[1].trim();
-                if(content.length < 1) return;
-                checkTag(ifClause, 'conditional steps', index, 1);
+                    compiledStepGroup.conditions = compileConditional(content, index);
+                }
 
-                compiledStepGroup.conditions = compileConditional(content, index);
-            }
+                stepGroup = ifClause ? stepGroup.replace(ifClause[0], '') : stepGroup.replace('<steps>', '');
 
-            stepGroup = ifClause ? stepGroup.replace(ifClause[0], '') : stepGroup.replace('<steps>', '');
+                compiledStepGroup.steps = compileSteps(stepGroup, index);
 
-            compiledStepGroup.steps = compileSteps(stepGroup, index);
-
-            compiledActions[name].push(compiledStepGroup);
+                compiledActions.actions[name].push(compiledStepGroup);
+            });
         });
+        compiledActionsGroups.push(compiledActions);
     });
 
-    return compiledActions;
+    return compiledActionsGroups;
 };
 
 let compileRoom = (data, name, index) => {
-    let compiledRoom = {actions: {}};
+    let compiledRoom = {actions: []};
 
     let description = parseTag('description', 'single')(data);
     checkTag(description, 'description', index, 1);
@@ -312,4 +326,5 @@ items.forEach((item, i) => {
     }
 });
 
+console.log(JSON.stringify(world));
 fs.writeFileSync(targetPath, JSON.stringify(world));
