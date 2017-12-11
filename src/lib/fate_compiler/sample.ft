@@ -1,13 +1,14 @@
 <describe "start">
     <directives>
-        north, south, east, west, inventory
+        north</>south</>east</>west</>inventory
     </directives>
     <location "cell">
 </describe>
 <describe "conditions">
-    cell_got_lamp = false,
-    cell_got_rock = false,
-    cell_opened_bars = false
+    cell_got_lamp = false</>
+    cell_got_rock = false</>
+    cell_opened_bars = false</>
+    test_var = Hello, this is a test.
 </describe>
 <describe "thing">
     <name "rock">
@@ -36,7 +37,7 @@
     <actions>
         <action "inventory">
             <steps>
-                <say>NO!</say>
+                <say><var "test_var"></say>
             </steps>
         </action>
     </actions>
@@ -92,6 +93,12 @@
                 </say>
                 <set>cell_opened_bars = true</set>
             </steps>
+        </action>
+        <action "look&slopes">
+            <route>
+                <room "test_room">
+                <active "look&test_room">
+            </route>
         </action>
         <action "look&passage">
             <steps>

@@ -6,16 +6,17 @@ console.log(initState);
 let directives = world.start.directives;
 let active = "";
 
+let resolveVal = (val) => {
+    return val.var ? world.conditions[val.var] : val;
+};
+
 let functions = {
     "say": function() {
         let final = [];
 
         for(let i = 0; i < arguments.length; i++) {
             let toPush;
-            if(arguments[i].var) {
-                toPush = world.conditions[arguments[i].var];
-            }
-            else if(arguments[i].if) {
+            if(arguments[i].if) {
                 if(Object.keys(arguments[i].if.conditions).every(condition => compareConditions(condition, arguments[i].if.conditions[condition]))) {
                     console.log("CONDITIONS MET");
                     console.log(arguments[i]);
@@ -23,7 +24,7 @@ let functions = {
                 }
             }
             else {
-                toPush = arguments[i];
+                toPush = resolveVal(arguments[i]);
             }
 
             final.push(toPush);
@@ -33,22 +34,26 @@ let functions = {
     "set": function() {
         console.log("SET ARGU",arguments);
         for(let i = 0; i < arguments.length; i++) {
-            world.conditions[arguments[i][0]] = arguments[i][1].var ? world.conditions[arguments[i][1].var] : arguments[i][1];
+            world.conditions[arguments[i][0]] = resolveVal(arguments[i][1]);
         }
     },
     "add": function(value, condition) {
-        world.conditions[condition] += value;
+        world.conditions[condition] += resolveVal(value);
     },
     "subtract": function(value, condition) {
-        world.conditions[condition] -= value;
+        world.conditions[condition] -= resolveVal(value);
     },
     "take": function(thing) {
-        world.things.find(x => x.name === thing).location = 'player';
+        world.things.find(x => x.name === resolveVal(thing)).location = 'player';
     },
     "drop": function(thing) {
-        world.things.find(x => x.name === thing).location = world.conditions.location;
+        world.things.find(x => x.name === resolveVal(thing)).location = world.conditions.location;
     },
     "list": function(room, preface, coda) {
+        room = resolveVal(room);
+        preface = resolveVal(preface);
+        coda = resolveVal(coda);
+
         let items = world.things
                             .filter(x => x.location === room)
                                 .map(thing => thing.description);
@@ -56,6 +61,7 @@ let functions = {
         return items.map(item => `${preface}${item}${coda}`);
     },
     "travel": function(place) {
+            place = resolveVal(place);
             world.conditions.location = place;
             if(world.rooms[place]) {
                 let actions = world.rooms[place].actions.filter(x => !x.conditions || Object.keys(x.conditions).every(condition => compareConditions(condition, x.conditions[condition])));
@@ -79,6 +85,7 @@ let functions = {
         }
     },
     "dial": function(name) {
+        name = resolveVal(name);
         let currentIndex = world.switches[name].indexOf(world.conditions[name]);
         let newIndex = currentIndex + 1 === world.switches[name].length ? 0 : currentIndex + 1;
         world.conditions[name] = world.switches[name][newIndex];
@@ -99,7 +106,7 @@ let select = (selected) => {
         if(world.rooms["anywhere"])
             things.push(world.rooms["anywhere"]);
 
-        console.log(things);
+        console.log("--THINGS",things);
         let returns = loopThings(things, active);
 
         if(returns.length || directives.includes(active) || active.includes('&')) {
@@ -140,9 +147,13 @@ let runActions = (actions) => {
     if(!actions) return;
     let returns = [];
     console.log("ROUTE", actions.route);
-    let resolvedActions = actions.route ? world.rooms[actions.route[0]].actions[actions.route[1]] : actions;
 
-    resolvedActions.forEach(action => {
+    if(actions.route) {
+        let [room, active] = actions.route;
+        return loopThings([world.rooms[room]], active);
+    }
+
+    actions.forEach(action => {
         let toRun;
 
         if(!action.conditions || Object.keys(action.conditions).every(condition => compareConditions(condition, action.conditions[condition])))

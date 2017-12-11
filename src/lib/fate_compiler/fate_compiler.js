@@ -1,8 +1,8 @@
 let fs = require('fs');
 
 let parseTag = (name, type = 'single') => {
-    if(type === 'single') return ((data) => { return data.match(new RegExp('<'+name+' "([\\s\\S]+?)">', 'i')); });
-    if(type === 'closing') return ((data) => { return data.match(new RegExp('<'+name+'>([\\s\\S]+?)<\/'+name+'>', 'i')); });
+    if(type === 'single') return ((data) => { return data === true || data === false ? data : data.match(new RegExp('<'+name+' "([\\s\\S]+?)">', 'i')); });
+    if(type === 'closing') return ((data) => { return data === true || data === false ? data : data.match(new RegExp('<'+name+'>([\\s\\S]+?)<\/'+name+'>', 'i')); });
     return () => {};
 };
 
@@ -32,10 +32,17 @@ let extractLR = (array) => {
     let leftHand = array[0].trim();
     let rightHand = array[1].trim();
 
-    if(rightHand === 'true') rightHand = true;
-    if(rightHand === 'false') rightHand = false;
-
     return {leftHand, rightHand};
+}
+
+let compileVal = (data, index) => {
+    let variable = parseTag('var', 'single')(data);
+    let compiled = variable ? variable[1] : data;
+
+    if(compiled === 'true') compiled = true;
+    if(compiled === 'false') compiled = false;
+
+    return variable ? {var: compiled} : compiled;
 }
 
 let compileConditional = (data, index) => {
@@ -87,7 +94,7 @@ let compileConditional = (data, index) => {
         let parts = condition.split(logicalOp);
         let {leftHand, rightHand} = extractLR(parts);
         compiledConditional[leftHand] = {}
-        compiledConditional[leftHand][logicalOpCompiled] = rightHand;
+        compiledConditional[leftHand][logicalOpCompiled] = compileVal(rightHand);
     });
 
     return compiledConditional;
@@ -116,42 +123,38 @@ let compileSteps = (data, index) => {
             compiledStep.params = step.map(chunk => {
                 console.log("CHUNK",chunk);
                 let conditions = chunk.match(/\(([\s\S]+?)\)>/);
-                if(!conditions) return chunk;
+                if(!conditions) return compileVal(chunk);
 
                 let ifTrue = chunk.replace(conditions[0],'');
 
-                return {if:{conditions: compileConditional(conditions[1]), then: ifTrue}};
+                return {if:{conditions: compileConditional(conditions[1]), then: compileVal(ifTrue)}};
             });
         }
 
         if(funcName === "set") {
-            let [leftHand, rightHand] = step.split('=');
-            leftHand = leftHand.trim();
-            rightHand = rightHand.trim();
-            if(rightHand === 'true') rightHand = true;
-            if(rightHand === 'false') rightHand = false;
+            let {leftHand, rightHand} = extractLR(step.split('='));
 
-            compiledStep.params = [[leftHand, rightHand]];
+            compiledStep.params = [[leftHand, compileVal(rightHand)]];
             console.log("STEP COMPILED",compiledStep);
         }
 
         if(funcName === "take" || funcName === "drop" || funcName === "travel") {
-            compiledStep.params = [step.trim()];
+            compiledStep.params = [compileVal(step.trim())];
         }
 
         if(funcName === 'list') {
             let tag;
             tag = parseTag('location', 'single')(data);
             checkTag(tag, 'location', index, 1);
-            compiledStep.params.push(tag[1]);
+            compiledStep.params.push(compileVal(tag[1]));
 
             tag = parseTag('before', 'single')(data);
             checkTag(tag, 'before', index, 1);
-            compiledStep.params.push(tag[1]);
+            compiledStep.params.push(compileVal(tag[1]));
 
             tag = parseTag('after', 'single')(data);
             checkTag(tag, 'after', index, 1);
-            compiledStep.params.push(tag[1]);
+            compiledStep.params.push(compileVal(tag[1]));
         }
         console.log("COMPILED STEP", compiledStep);
         compiledSteps.push(compiledStep);
@@ -189,6 +192,18 @@ let compileActions = (data, index) => {
             checkTag(tag, "action", index, 1);
             let name = tag[1];
             compiledActions.actions[name] = [];
+
+            let route = parseTag('route', 'closing')(action);
+            if(route) {
+                let roomTag = parseTag('room', 'single')(route[1]);
+                checkTag(roomTag, 'route: room', index, 1);
+                let activeTag = parseTag('active', 'single')(route[1]);
+                checkTag(activeTag, 'route: active', index, 1);
+
+
+                compiledActions.actions[name] = {route: [roomTag[1].trim(), activeTag[1].trim()]};
+                return;
+            }
 
             let stepGroups = action.replace(tag[0],'').split('</steps>');
             console.log(name);
@@ -272,7 +287,7 @@ let compileStart = (data, index) => {
 
     let directives = tag[1];
 
-    directives = directives.split(',');
+    directives = directives.split('</>');
     directives = directives.map(d => d.trim());
     start.directives = directives;
 
@@ -280,19 +295,13 @@ let compileStart = (data, index) => {
 };
 
 let compileConditions = (data, index) => {
-    let conditions = data.split(',');
+    let conditions = data.split('</>');
     let compiled = {};
 
     conditions.forEach(condition => {
-        condition = condition.split('=');
+        let {leftHand, rightHand} = extractLR(condition.split('='));
 
-        let leftHandSide = condition[0].trim();
-        let rightHandSide = condition[1].trim();
-
-        if(rightHandSide === 'true') rightHandSide = true;
-        if(rightHandSide === 'false') rightHandSide = false;
-
-        compiled[leftHandSide] = rightHandSide;
+        compiled[leftHand] = compileVal(rightHand);
     });
 
     console.log("compiled", compiled);
