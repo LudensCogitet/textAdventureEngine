@@ -21,7 +21,7 @@ let world = {
     "rooms": {},
     "conditions": {
         "location": '',
-        "turns": -1
+        "__turns__": -1
     },
     "switches": {},
     "emitters": [],
@@ -29,6 +29,7 @@ let world = {
 };
 
 let extractLR = (array) => {
+    console.log(array);
     let leftHand = array[0].trim();
     let rightHand = array[1].trim();
 
@@ -42,7 +43,7 @@ let compileVal = (data, index) => {
     if(compiled === 'true') compiled = true;
     if(compiled === 'false') compiled = false;
 
-    return variable ? {var: compiled} : compiled;
+    return variable ? JSON.stringify({var: compiled}) : compiled;
 }
 
 let compileConditional = (data, index) => {
@@ -56,45 +57,49 @@ let compileConditional = (data, index) => {
         condition = condition.trim();
         if(condition.length < 1) return;
 
-        if(condition.match("==")) {
-            logicalOp = "==";
+        if(condition.match(" == ")) {
+            logicalOp = " == ";
             logicalOpCompiled = "eq";
         }
 
-        if(condition.match("<")) {
-            logicalOp = "<";
+        if(condition.match(" < ")) {
+            logicalOp = " < ";
             logicalOpCompiled = "lt";
         }
 
-        if(condition.match("<=")) {
-            logicalOp = "<=";
+        if(condition.match(" <= ")) {
+            logicalOp = " <= ";
             logicalOpCompiled = "lte";
         }
 
-        if(condition.match(">")) {
-            logicalOp = ">";
+        if(condition.match(" > ")) {
+            logicalOp = " > ";
             logicalOpCompiled = "gt";
         }
 
-        if(condition.match(">=")) {
-            logicalOp = ">=";
+        if(condition.match(" >= ")) {
+            logicalOp = " >= ";
             logicalOpCompiled = "gte";
         }
 
-        if(condition.match("!=")) {
-            logicalOp = "!=";
+        if(condition.match(" != ")) {
+            logicalOp = " != ";
             logicalOpCompiled = "ne";
         }
 
-        if(condition.match("%")) {
-            logicalOp = "%";
+        if(condition.match(" % ")) {
+            logicalOp = " % ";
             logicalOpCompiled = "mu";
         }
 
         let parts = condition.split(logicalOp);
+
         let {leftHand, rightHand} = extractLR(parts);
+        leftHand = compileVal(leftHand);
+        rightHand = compileVal(rightHand);
+
         compiledConditional[leftHand] = {}
-        compiledConditional[leftHand][logicalOpCompiled] = compileVal(rightHand);
+        compiledConditional[leftHand][logicalOpCompiled] = rightHand;
     });
 
     return compiledConditional;
@@ -121,7 +126,7 @@ let compileSteps = (data, index) => {
         if(funcName === "say") {
             step = step.split(/(?:<if|<fi>)/);
             compiledStep.params = step.map(chunk => {
-                console.log("CHUNK",chunk);
+
                 let conditions = chunk.match(/\(([\s\S]+?)\)>/);
                 if(!conditions) return compileVal(chunk);
 
@@ -133,9 +138,11 @@ let compileSteps = (data, index) => {
 
         if(funcName === "set") {
             let {leftHand, rightHand} = extractLR(step.split('='));
+            leftHand = compileVal(leftHand);
+            rightHand = compileVal(rightHand);
 
-            compiledStep.params = [[leftHand, compileVal(rightHand)]];
-            console.log("STEP COMPILED",compiledStep);
+            compiledStep.params = [[leftHand, rightHand]];
+
         }
 
         if(funcName === "take" || funcName === "drop" || funcName === "travel") {
@@ -156,7 +163,7 @@ let compileSteps = (data, index) => {
             checkTag(tag, 'after', index, 1);
             compiledStep.params.push(compileVal(tag[1]));
         }
-        console.log("COMPILED STEP", compiledStep);
+
         compiledSteps.push(compiledStep);
     });
 
@@ -168,7 +175,7 @@ let compileActions = (data, index) => {
     if(!data.match('</actions>')) return compiledActionsGroups;
 
     let actionsGroups = data.split('</actions>');
-    console.log("ACTION GROUPS",actionsGroups);
+
     actionsGroups.forEach(actions => {
         let compiledActions = {actions:{}};
         let ifClause = actions.match(/<actions if\(([\s\S]+?)\)>/i);
@@ -183,11 +190,11 @@ let compileActions = (data, index) => {
         actions = ifClause ? actions.slice(actions.indexOf(ifClause[0])).replace(ifClause[0], '') : actions.slice(actions.indexOf('<actions>')).replace('<actions>', '');
 
         actions = actions.split('</action>');
-        console.log("ACTIONS", actions);
+
         actions.forEach(action => {
             action = action.trim();
             if(action.length < 1) return;
-            console.log("ACTION\n\n", action);
+
             let tag = parseTag('action','single')(action);
             checkTag(tag, "action", index, 1);
             let name = tag[1];
@@ -201,12 +208,12 @@ let compileActions = (data, index) => {
                 checkTag(activeTag, 'route: active', index, 1);
 
 
-                compiledActions.actions[name] = {route: [roomTag[1].trim(), activeTag[1].trim()]};
+                compiledActions.actions[name] = {route: [compileVal(roomTag[1].trim()), compileVal(activeTag[1].trim())]};
                 return;
             }
 
             let stepGroups = action.replace(tag[0],'').split('</steps>');
-            console.log(name);
+
             stepGroups.forEach(stepGroup => {
                 stepGroup = stepGroup.trim();
 
@@ -304,7 +311,7 @@ let compileConditions = (data, index) => {
         compiled[leftHand] = compileVal(rightHand);
     });
 
-    console.log("compiled", compiled);
+
     return compiled;
 };
 
@@ -323,7 +330,7 @@ items.forEach((item, i) => {
     }
     if(type[1] === 'conditions') {
         world.conditions = Object.assign(world.conditions, compileConditions(item.replace(type[0],''), i));
-        console.log("WORLD.CONDITIONS", world.conditions);
+
     }
     if(type[1] === 'thing'){
         world.things.push(compileThing(item, i));
@@ -335,5 +342,5 @@ items.forEach((item, i) => {
     }
 });
 
-console.log(JSON.stringify(world));
+
 fs.writeFileSync(targetPath, JSON.stringify(world));

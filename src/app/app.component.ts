@@ -17,8 +17,10 @@ export class AppComponent  {
     }
 
     private printToFeed(text) {
+      console.log("PRINT TO FEED", text);
       if(!text) return;
       text = text.map(entry => entry.split(" "));
+      console.log("SPLIT TEXT", text);
       this.feed = this.feed.concat(text);
     }
 
@@ -35,6 +37,7 @@ export class AppComponent  {
                     text = text.replace(x, x.replace(/ /g, "~"));
                 });
             }
+            console.log(text);
             return text;
         });
     }
@@ -48,7 +51,7 @@ export class AppComponent  {
       this.status = data.status;
 
       let toPrint = data.text;
-      if(this.status.active) this.appendToFeed(' ... ');
+      if(this.status.active) this.appendToFeed('... ');
       this.printToFeed(this.packAliases(toPrint));
       if(!this.status.active) this.printToFeed(['?>']);
     }
@@ -57,10 +60,10 @@ export class AppComponent  {
         let name = command.name ? command.name.replace(/\W+/g, "") : command;
         let display = command;
         if(command.display) {
-            display = command.display.replace(/ /g, "_").replace(/\W+/g, "").replace('_', ' ');
+            console.log("--COMMAND.DISPLAY", command.display);
+            console.log(name);
+            display = command.display.replace(/\W$/g, "");
         }
-
-
         this.appendToFeed(display);
         this.update(fate.select(name));
     }

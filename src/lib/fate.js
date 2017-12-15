@@ -2,13 +2,23 @@
 
 let world = require('./fate_compiler/compiled.json');
 let initState = JSON.stringify(world);
-console.log(initState);
+
 let directives = world.start.directives;
 let active = "";
 
 let resolveVal = (val) => {
-    return val.var ? world.conditions[val.var] : val;
+    try { val = JSON.parse(val); }
+    catch(e) { return val; }
+
+    if(!val.var) return val;
+    return world.conditions[val.var];
 };
+
+let resolveVar = (variable) => {
+    try { variable = JSON.parse(variable); }
+    catch(e) { return variable; }
+    return variable.var;
+}
 
 let functions = {
     "say": function() {
@@ -18,9 +28,7 @@ let functions = {
             let toPush;
             if(arguments[i].if) {
                 if(Object.keys(arguments[i].if.conditions).every(condition => compareConditions(condition, arguments[i].if.conditions[condition]))) {
-                    console.log("CONDITIONS MET");
-                    console.log(arguments[i]);
-                    toPush = arguments[i].if.then;
+                    toPush = resolveVal(arguments[i].if.then);
                 }
             }
             else {
@@ -32,16 +40,17 @@ let functions = {
         return final.join('');
     },
     "set": function() {
-        console.log("SET ARGU",arguments);
         for(let i = 0; i < arguments.length; i++) {
-            world.conditions[arguments[i][0]] = resolveVal(arguments[i][1]);
+            console.log("--set",resolveVar(arguments[i][0]));
+            console.log("--with val", resolveVal(arguments[i][1]))
+            world.conditions[resolveVar(arguments[i][0])] = resolveVal(arguments[i][1]);
         }
     },
     "add": function(value, condition) {
-        world.conditions[condition] += resolveVal(value);
+        world.conditions[resolveVar(condition)] += resolveVal(value);
     },
     "subtract": function(value, condition) {
-        world.conditions[condition] -= resolveVal(value);
+        world.conditions[resolveVar(condition)] -= resolveVal(value);
     },
     "take": function(thing) {
         world.things.find(x => x.name === resolveVal(thing)).location = 'player';
@@ -99,30 +108,30 @@ let start = () => {
 let select = (selected) => {
         selected = selected.toLowerCase();
         active = active ? `${active}&${selected}` : selected;
-        console.log(world);
+        console.log("ACTIVE", active);
         let things = world.things.filter(x => x.location === world.conditions.location || x.location === 'player');
         if(world.rooms[world.conditions.location])
             things.push(world.rooms[world.conditions.location]);
         if(world.rooms["anywhere"])
             things.push(world.rooms["anywhere"]);
 
-        console.log("--THINGS",things);
+
         let returns = loopThings(things, active);
 
         if(returns.length || directives.includes(active) || active.includes('&')) {
             active = '';
-            world.conditions.turns++;
+            world.conditions.__turns__++;
             returns = returns.concat(checkEmitters(things));
             returns = returns.concat(loopThings(things, '__tick__'));
         }
-
+        console.log(world.conditions.__turns__);
         return packageData(returns);
 };
 
 let checkEmitters = (things) => {
     let returns = []
     world.emitters.forEach(emitter => {
-        if(world.conditions.turns !== 0 && world.conditions.turns % emitter.fire === 0)
+        if(world.conditions.__turns__ !== 0 && world.conditions.__turns__ % emitter.fire === 0)
             returns = returns.concat(loopThings(things, emitter.action));
     });
     return returns;
@@ -131,11 +140,11 @@ let checkEmitters = (things) => {
 let loopThings = (things, active) => {
     let returns = [];
     things.forEach(thing => {
-        console.log("THING",thing);
+
         let actionsGroups = thing.actions.filter(x => !x.conditions || Object.keys(x.conditions).every(condition => compareConditions(condition, x.conditions[condition])));
         actionsGroups.forEach(actions => {
             let result = runActions(actions.actions[active]);
-            console.log("RESULT", result);
+
             if(result) returns = returns.concat(result);
         });
     });
@@ -146,7 +155,7 @@ let loopThings = (things, active) => {
 let runActions = (actions) => {
     if(!actions) return;
     let returns = [];
-    console.log("ROUTE", actions.route);
+
 
     if(actions.route) {
         let [room, active] = actions.route;
@@ -165,7 +174,7 @@ let runActions = (actions) => {
             toRun.forEach(step => {
                 if(functions[step.function]) {
                     let val = functions[step.function](...step.params);
-                    console.log("VAL", val);
+
                     if(val) returns = returns.concat(val);
                 }
             });
@@ -187,38 +196,28 @@ let packageData = (returns) => {
 };
 
 let compareConditions = (condition, predicate) => {
-    let leftHandSide = world.conditions[condition];
+    let leftHandSide = resolveVal(condition);
 
-    if(predicate.hasOwnProperty('eq'))     return predicate.eq.var ?     leftHandSide === world.conditions[predicate.eq.var] :
-                                                                         leftHandSide === predicate.eq;
+    console.log("CONDITION", leftHandSide);
+    console.log("PREDICATE", predicate);
 
-    if(predicate.hasOwnProperty('ne'))     return predicate.ne.var ?     leftHandSide !== world.condition[predicate.ne.var] :
-                                                                         leftHandSide !== predicate.ne;
-
-    if(predicate.hasOwnProperty('lt'))     return predicate.lt.var ?     leftHandSide <   world.conditions[predicate.lt.var] :
-                                                                         leftHandSide <   predicate.lt;
-
-    if(predicate.hasOwnProperty('lte'))    return predicate.lte.var ?    leftHandSide <=   world.conditions[predicate.lte.var] :
-                                                                         leftHandSide <=   predicate.lte;
-
-    if(predicate.hasOwnProperty('gt'))     return predicate.gt.var ?     leftHandSide >   world.conditions[predicate.gt.var] :
-                                                                         leftHandSide >   predicate.gt;
-
-    if(predicate.hasOwnProperty('gte'))    return predicate.gte.var ?    leftHandSide >=   world.conditions[predicate.gte.var] :
-                                                                         leftHandSide >=   predicate.gte;
+    if(predicate.hasOwnProperty('eq'))     return leftHandSide === resolveVal(predicate.eq);
+    if(predicate.hasOwnProperty('ne'))     return leftHandSide !== resolveVal(predicate.ne);
+    if(predicate.hasOwnProperty('lt'))     return leftHandSide <   resolveVal(predicate.lt);
+    if(predicate.hasOwnProperty('lte'))    return leftHandSide <=  resolveVal(predicate.lte);
+    if(predicate.hasOwnProperty('gt'))     return leftHandSide >   resolveVal(predicate.gt);
+    if(predicate.hasOwnProperty('gte'))    return leftHandSide >=  resolveVal(predicate.gte);
 
     if(predicate.hasOwnProperty('mu')) {
+        console.log(resolveVal(predicate.mu));
+        console.log("HERE");
         if(leftHandSide === 0)
             return false;
-
-        if(predicate.mu.var) {
-            if(predicate.mu.var === 0) return false;
-        } else {
-            if(predicate.mu === 0) return false;
-        }
-
-        return predicate.mu.var ?       leftHandSide % world.conditions[predicate.mu.var] === 0 :
-                                        leftHandSide % predicate.mu === 0
+        console.log("AND HERE");
+        if(resolveVal(predicate.mu) === 0) return false;
+        console.log(resolveVal  (predicate.mu));
+        console.log(leftHandSide % resolveVal(predicate.mu));
+        return leftHandSide % resolveVal(predicate.mu) === 0;
     }
 };
 

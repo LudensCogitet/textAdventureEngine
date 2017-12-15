@@ -22,9 +22,10 @@ export class ClickWordComponent implements OnInit {
             this.name = text;
         }
         else {
-            let sides = text.split("|");
-            this.display = sides[0].replace("[", "").replace(/~/g, " ");
-            this.name = sides[1].replace("]", "").replace(/~/g, " ");
+            let nameMatch = text.match(/\|(.*)\]/);
+            this.name = nameMatch[1].replace(/~/g, ' ');
+            text = text.replace(nameMatch[0], '');
+            this.display = text.replace("[", "").replace(/~/g, " ");
         }
     }
 

@@ -1,29 +1,39 @@
 <describe "start">
     <directives>
-        north</>south</>east</>west</>inventory
+        north</>
+        south</>
+        east</>
+        west</>
+        inventory
     </directives>
     <location "cell">
 </describe>
 <describe "conditions">
-    cell_got_lamp = false</>
-    cell_got_rock = false</>
-    cell_opened_bars = false</>
-    test_var = Hello, this is a test.
+    got_lamp = false</>
+    got_rock = false</>
+    cell_opened_bars = false
 </describe>
 <describe "thing">
-    <name "rock">
+    <name "_rock">
     <description "a rock">
     <location "cell">
+    <actions>
+        <action "look&_rock">
+            <steps if(<var "got_rock"> == true)>
+                <say>Your trusty [rock.|_rock] You feel certain this thing will come in handy.</say>
+            </steps>
+        <action>
+    </actions>
 </describe>
 <describe "thing">
-    <name "oil_lamp">
+    <name "_oil_lamp">
     <description "a depressingly dim oil lamp">
     <location "cell">
 </describe>
 <describe "room">
     <name "anywhere">
     <description "anywhere">
-    <actions if(cell_got_lamp == false)>
+    <actions>
         <action "inventory">
             <steps>
                 <list>
@@ -34,13 +44,6 @@
             </steps>
         </action>
     </actions>
-    <actions>
-        <action "inventory">
-            <steps>
-                <say><var "test_var"></say>
-            </steps>
-        </action>
-    </actions>
 </describe>
 <describe "room">
     <name "cell">
@@ -48,57 +51,23 @@
     <actions>
         <action "look&cell">
             <steps>
-                <say>Your cell is barely more than a damp debris littered alcove scooped out of the rock wall of a wide, low passage.</say>
                 <say>
+                    Your cell is barely more than a damp, debris littered alcove scooped out of the rock wall of a wide, low passage.
                     [Iron bars|cell_bars] are set into the floor and ceiling of the opening before you to the west.
-                    <if(cell_opened_bars==true)>A loose bar has been torn out of place, allowing just enough room to squeeze through.<fi>
+                    <if(<var "cell_opened_bars"> == true)>A loose bar has been removed, allowing just enough room to squeeze through.<fi>
                 </say>
-                <say>The skeletal [remains|cell_skeleton] of an unfortunate former occupant sit against the south wall.</say>
-                <say><if(cell_got_lamp==false)>An [oil lamp|oil_lamp] hung from a peg on the passage wall provides a grim and meager radiance.<fi></say>
+                <say>
+                    The [skeletal remains|cell_skeleton] of an unfortunate former occupant sit against the south wall.
+                    <if(<var "got_lamp"> == false)>An [oil lamp|_oil_lamp] hung from a peg on the passage wall provides a grim and meager radiance.<fi>
+                </say>
             </steps>
         </action>
         <action "look&debris">
             <steps>
                 <say>
-                    The floor is strewn with [rocks,|rock] sand, and other debris. It's clear this cell is not intended to be even basically livable.
+                    The floor is strewn with [rocks, sand, and other debris|rocks_and_debris]. It's clear this cell is not intended to be even basically livable.
                 </say>
             </steps>
-        </action>
-        <action "hand&debris">
-            <steps>
-                <say>
-                    You grasp large handfuls of sand and gravel and throw them in the air, hooting like a cave man.
-                </say>
-            </steps>
-        </action>
-        <action "look&rock">
-            <steps if(cell_got_rock == false)>
-                <say>
-                    One rock in particular catches your eye. Sharp on one end, flat on the other. A fine improvised tool any Neanderthal would be jealous of.
-                </say>
-            </steps>
-        </action>
-        <action "hand&rock">
-            <steps if(cell_got_rock == false)>
-                <say>You pick up the rock.</say>
-                <set>cell_got_rock = true</set>
-                <take>rock</take>
-            </steps>
-        </action>
-        <action "rock&cell_bars">
-            <steps if(cell_got_rock == true)>
-                <say>
-                    Grasping the rock by the flat end, you're able to dig away at the soft stone surrounding the bottom of one of the bars.
-                    Several minutes and one sore arm later, you pull the bar out of place.
-                </say>
-                <set>cell_opened_bars = true</set>
-            </steps>
-        </action>
-        <action "look&slopes">
-            <route>
-                <room "test_room">
-                <active "look&test_room">
-            </route>
         </action>
         <action "look&passage">
             <steps>
@@ -107,24 +76,53 @@
                 </say>
             </steps>
         </action>
-        <action "hand&oil_lamp">
-            <steps if(cell_opened_bars == false)>
+        <action "look&rocks_and_debris">
+            <steps if(<var "got_rock"> == false)>
                 <say>
-                    You wish you could take the oil lamp. Sadly you are a prisoner and there are iron bars in the way, remember?
+                    One [rock in particular|_rock] catches your eye. Sharp on one end, flat on the other. A fine improvised tool any Neanderthal would be jealous of.
                 </say>
             </steps>
-            <steps if(cell_opened_bars == true)>
+        </action>
+        <action "hand&_rock">
+            <steps if(<var "got_rock"> == false)>
+                <say>You pick up the [rock.|_rock]</say>
+                <set><var "got_rock"> = true</set>
+                <take>_rock</take>
+            </steps>
+        </action>
+        <action "_rock&cell_bars">
+            <steps if(<var "got_rock"> == true)>
                 <say>
-                    You take the oil lamp, reasoning that, in a subterranean tunnel, a grim and meager radiance is better than no radiance at all.
+                    Grasping the [rock|_rock] by the flat end, you're able to dig away at the soft stone surrounding the bottom of one of the bars.
+                    Several minutes and one sore arm later, you pull the bar out of place.
                 </say>
-                <take>oil_lamp</take>
-                <set>cell_got_lamp = true</set>
+                <set><var "cell_opened_bars"> = true</set>
+            </steps>
+        </action>
+        <action "hand&_oil_lamp">
+            <steps if(<var "cell_opened_bars"> == false)>
+                <say>
+                    You wish you could take the oil lamp. Sadly you are a prisoner and there are [iron bars|iron_bars] in the way, remember?
+                </say>
+            </steps>
+            <steps if(<var "cell_opened_bars"> == true)>
+                <say>
+                    You take the [oil lamp,|_oil_lamp] reasoning that, in a subterranean tunnel, a grim and meager radiance is better than no radiance at all.
+                </say>
+                <take>_oil_lamp</take>
+                <set><var "got_lamp"> = true</set>
             </steps>
         </action>
         <action "south">
-            <steps if(cell_opened_bars == true)>
+            <steps if(<var "cell_opened_bars"> == true)>
                 <travel>test_room</travel>
             </steps>
+            <steps if(cell_opened_bars == false)>
+                <say>You'd have to be as thin as your cell mate there to get through these [bars.|iron_bars]</say>
+            </steps>
+        </action>
+        <action "look&cell_skeleton">
+            <say>You're clearly not the first one the cultists have entertained here.</say>
         </action>
     </actions>
 </describe>
