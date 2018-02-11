@@ -1,0 +1,25 @@
+<describe "start">
+    <directives>
+        north<and>
+        south<and>
+        east<and>
+        west<and>
+        inventory
+    </directives>
+    <location "room_cell">
+</describe>
+<describe "room">
+    <name "anywhere">
+    <description "anywhere">
+    <actions>
+        <action "inventory">
+            <steps>
+                <list>
+                    <location "player">
+                    <before "You have ">
+                    <after ".">
+                </list>
+            </steps>
+        </action>
+    </actions>
+</describe>

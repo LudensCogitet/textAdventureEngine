@@ -11,7 +11,27 @@ let checkTag = (tag, tagName, elemIndex, paramNum) => {
     if(tag.length < paramNum) throw new Error(`Missing parameter in ${tagName} tag in element ${elemIndex}: "${tag}"`);
 };
 
-let script = fs.readFileSync(process.argv[2], 'utf8');
+let script = '';
+let scriptFile = process.argv[2];
+let fileExtension = scriptFile.split('.')[1];
+console.log(process.env);
+if(fileExtension === 'ft') {
+    script = fs.readFileSync(scriptFile, 'utf8');
+} else if(fileExtension === 'ftb') {
+    let batch = fs.readFileSync(scriptFile, 'utf8');
+    batch = batch.trim().split('\n');
+
+    batch.forEach(line => {
+        line = line.trim();
+        if(line[0] === '#') return;
+        console.log(line);
+        script += '\n' + fs.readFileSync(line, 'utf8').trim() + '\n';
+    });
+} else {
+    console.log("invalid file extension: must be .ft or .ftb");
+    process.exit();
+}
+
 let targetPath = process.argv[3] || './';
 
 let world = {
@@ -147,6 +167,12 @@ let compileSteps = (data, index) => {
 
         if(funcName === "take" || funcName === "drop" || funcName === "travel") {
             compiledStep.params = [compileVal(step.trim())];
+        }
+
+        if(funcName === "move" || funcName == "add" || funcName == "subtract") {
+            let params = step.split(/<to>|<from>/);
+            
+            compiledStep.params = [compileVal(params[0].trim()), compileVal(params[1].trim())];
         }
 
         if(funcName === 'list') {
@@ -294,7 +320,7 @@ let compileStart = (data, index) => {
 
     let directives = tag[1];
 
-    directives = directives.split('</>');
+    directives = directives.split('<and>');
     directives = directives.map(d => d.trim());
     start.directives = directives;
 
@@ -302,7 +328,7 @@ let compileStart = (data, index) => {
 };
 
 let compileConditions = (data, index) => {
-    let conditions = data.split('</>');
+    let conditions = data.split('<and>');
     let compiled = {};
 
     conditions.forEach(condition => {

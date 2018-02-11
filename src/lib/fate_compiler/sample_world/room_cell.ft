@@ -1,25 +1,10 @@
-<describe "start">
-    <directives>
-        north</>
-        south</>
-        east</>
-        west</>
-        inventory
-    </directives>
-    <location "cell">
-</describe>
-<describe "conditions">
-    got_lamp = false</>
-    got_rock = false</>
-    cell_opened_bars = false
-</describe>
 <describe "thing">
     <name "_rock">
     <description "a rock">
-    <location "cell">
+    <location "room_cell">
     <actions>
         <action "look&_rock">
-            <steps if(<var "got_rock"> == true)>
+            <steps if(<var "cell_got_rock"> == true)>
                 <say>Your trusty [rock.|_rock] You feel certain this thing will come in handy.</say>
             </steps>
         <action>
@@ -28,39 +13,41 @@
 <describe "thing">
     <name "_oil_lamp">
     <description "a depressingly dim oil lamp">
-    <location "cell">
+    <location "room_cell">
+</describe>
+<describe "thing">
+    <name "_key">
+    <description "a brass key you got from a skeleton's head">
+    <location "room_cell">
+</describe>
+<describe "conditions">
+    cell_got_lamp = false<and>
+    cell_got_rock = false<and>
+    cell_got_key = false<and>
+    cell_opened_bars = false
 </describe>
 <describe "room">
-    <name "anywhere">
-    <description "anywhere">
-    <actions>
-        <action "inventory">
-            <steps>
-                <list>
-                    <location "player">
-                    <before "You have ">
-                    <after ".">
-                </list>
-            </steps>
-        </action>
-    </actions>
-</describe>
-<describe "room">
-    <name "cell">
+    <name "room_cell">
     <description "Cell">
     <actions>
-        <action "look&cell">
+        <action "look&room_cell">
             <steps>
                 <say>
                     Your cell is barely more than a damp, debris littered alcove scooped out of the rock wall of a wide, low passage.
                     [Iron bars|cell_bars] are set into the floor and ceiling of the opening before you to the west.
-                    <if(<var "cell_opened_bars"> == true)>A loose bar has been removed, allowing just enough room to squeeze through.<fi>
+                    <if(<var "cell_opened_bars"> == true)>A [loose bar|_loose_bar] has been removed, allowing just enough room to squeeze through.<fi>
                 </say>
                 <say>
                     The [skeletal remains|cell_skeleton] of an unfortunate former occupant sit against the south wall.
-                    <if(<var "got_lamp"> == false)>An [oil lamp|_oil_lamp] hung from a peg on the passage wall provides a grim and meager radiance.<fi>
+                    <if(<var "cell_got_key"> == true)>The head has been detached from the body, and is lying on the floor.<fi>
+                    <if(<var "cell_got_lamp"> == false)>An [oil lamp|_oil_lamp] hung from a peg on the passage wall beyond the bars provides a grim and meager radiance.<fi>
                 </say>
             </steps>
+        </action>
+        <action "hand&head">
+            <say>
+                You reach for the skull, but then decide to refrain from further desecrating this corpse.
+            </say>
         </action>
         <action "look&debris">
             <steps>
@@ -77,21 +64,21 @@
             </steps>
         </action>
         <action "look&rocks_and_debris">
-            <steps if(<var "got_rock"> == false)>
+            <steps if(<var "cell_got_rock"> == false)>
                 <say>
                     One [rock in particular|_rock] catches your eye. Sharp on one end, flat on the other. A fine improvised tool any Neanderthal would be jealous of.
                 </say>
             </steps>
         </action>
         <action "hand&_rock">
-            <steps if(<var "got_rock"> == false)>
+            <steps if(<var "cell_got_rock"> == false)>
                 <say>You pick up the [rock.|_rock]</say>
-                <set><var "got_rock"> = true</set>
+                <set><var "cell_got_rock"> = true</set>
                 <take>_rock</take>
             </steps>
         </action>
         <action "_rock&cell_bars">
-            <steps if(<var "got_rock"> == true)>
+            <steps if(<var "cell_got_rock"> == true)>
                 <say>
                     Grasping the [rock|_rock] by the flat end, you're able to dig away at the soft stone surrounding the bottom of one of the bars.
                     Several minutes and one sore arm later, you pull the bar out of place.
@@ -110,34 +97,51 @@
                     You take the [oil lamp,|_oil_lamp] reasoning that, in a subterranean tunnel, a grim and meager radiance is better than no radiance at all.
                 </say>
                 <take>_oil_lamp</take>
-                <set><var "got_lamp"> = true</set>
+                <set><var "cell_got_lamp"> = true</set>
             </steps>
         </action>
         <action "south">
             <steps if(<var "cell_opened_bars"> == true)>
-                <travel>test_room</travel>
+                <travel>room_flooded_passage</travel>
             </steps>
             <steps if(cell_opened_bars == false)>
                 <say>You'd have to be as thin as your cell mate there to get through these [bars.|iron_bars]</say>
             </steps>
         </action>
         <action "look&cell_skeleton">
-            <say>You're clearly not the first one the cultists have entertained here.</say>
-        </action>
-    </actions>
-</describe>
-<describe "room">
-    <name "test_room">
-    <description "Just another room">
-    <actions>
-        <action "look&test_room">
             <steps>
-                <say>This is just a test room</say>
+                <say>
+                    You're clearly not the first one the cultists have entertained here.
+                    The [skeleton's head|skeleton_head] rests awkwardly sunken between his shoulders.
+                    His hands are spread open at his sides in an eerie gesture of resignation.
+                </say>
             </steps>
         </action>
-        <action "north">
+        <action "look&skeleton_head">
+            <steps if(<var "cell_got_key"> == false)>
+                <say>
+                    Examining the head more closely, you can clearly see it's been moved and then replaced.
+                    Suddenly a glint catches your eye; a [key|_key] can be seen through the ocular cavity.
+                </say>
+            </steps>
+        </action>
+        <action "hand&_loose_bar">
             <steps>
-                <travel>cell</travel>
+                <say>
+                    While a handy weapon in itself, you find it difficult to imagine wielding it effectively in subterranean tunnels.
+                    You decide to leave it behind.
+                </say>
+            </steps>
+        </action>
+        <action "hand&_key">
+            <steps if(<var "cell_got_key"> == false)>
+                <say>
+                    Gingerly you reach into the eye socket to take the key,
+                    and the head promptly clatters to the floor. With a silent apology to
+                    your deceased cell mate you stoop down and remove the key.
+                </say>
+                <set><var "cell_got_key"> = true</set>
+                <take>_key</take>
             </steps>
         </action>
     </actions>

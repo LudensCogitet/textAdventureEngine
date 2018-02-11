@@ -1,17 +1,25 @@
 'use strict';
 
-let world = require('./fate_compiler/compiled.json');
+let world = require('./fate_compiler/sample_world/compiled.json');
 let initState = JSON.stringify(world);
 
 let directives = world.start.directives;
 let active = "";
+let executed = "";
+
+let parseNumber = (val) => {
+    let numberized = parseInt(val);
+    if(isNaN(numberized)) return val;
+
+    return numberized;
+};
 
 let resolveVal = (val) => {
     try { val = JSON.parse(val); }
-    catch(e) { return val; }
+    catch(e) { return parseNumber(val); }
 
-    if(!val.var) return val;
-    return world.conditions[val.var];
+    if(!val.var) return parseNumber(val);
+    return parseNumber(world.conditions[val.var]);
 };
 
 let resolveVar = (variable) => {
@@ -47,16 +55,19 @@ let functions = {
         }
     },
     "add": function(value, condition) {
-        world.conditions[resolveVar(condition)] += resolveVal(value);
+        world.conditions[resolveVar(condition)] = parseNumber(world.conditions[resolveVar(condition)]) + resolveVal(value);
     },
     "subtract": function(value, condition) {
-        world.conditions[resolveVar(condition)] -= resolveVal(value);
+        world.conditions[resolveVar(condition)] = parseNumber(world.conditions[resolveVar(condition)]) - resolveVal(value);
     },
     "take": function(thing) {
         world.things.find(x => x.name === resolveVal(thing)).location = 'player';
     },
     "drop": function(thing) {
         world.things.find(x => x.name === resolveVal(thing)).location = world.conditions.location;
+    },
+    "move": function(thing, location) {
+        world.things.find(x => x.name === resolveVal(thing)).location = resolveVal(location);
     },
     "list": function(room, preface, coda) {
         room = resolveVal(room);
@@ -109,12 +120,15 @@ let select = (selected) => {
         selected = selected.toLowerCase();
         active = active ? `${active}&${selected}` : selected;
         console.log("ACTIVE", active);
-        let things = world.things.filter(x => x.location === world.conditions.location || x.location === 'player');
-        if(world.rooms[world.conditions.location])
-            things.push(world.rooms[world.conditions.location]);
+        let things = [];
+
         if(world.rooms["anywhere"])
             things.push(world.rooms["anywhere"]);
 
+        things = things.concat(world.things.filter(x => x.location === world.conditions.location || x.location === 'player' || x.location === 'anywhere'));
+
+        if(world.rooms[world.conditions.location])
+            things.push(world.rooms[world.conditions.location]);
 
         let returns = loopThings(things, active);
 
@@ -188,6 +202,7 @@ let packageData = (returns) => {
     return { text: returns,
              status: {
                      active: active,
+                     executed: executed,
                      location: world.rooms[world.conditions.location].description,
                      conditions: world.conditions,
                      inventory: world.things.filter(x => x.location === 'player').map(x => x.description)

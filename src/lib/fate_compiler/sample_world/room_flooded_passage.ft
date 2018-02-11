@@ -1,0 +1,77 @@
+<describe "conditions">
+    _in_flooded_passage_count = 0<and>
+    flooded_passage_got_shell = false
+</describe>
+<describe "thing">
+    <name "_shell">
+    <description "an iridescent conch shell">
+    <location "room_flooded_passage">
+</describe>
+<describe "thing">
+    <name "_shell_with_water">
+    <description "an iridescent conch shell filled with icy subterranean water">
+    <location "nowhere">
+</describe>
+<describe "room">
+    <name "room_flooded_passage">
+    <description "Flooded Passage">
+    <actions>
+        <action "__tick__">
+            <steps>
+                <add>1<to><var "_in_flooded_passage_count"></add>
+            </steps>
+            <steps if(<var "_in_flooded_passage_count"> == 2)>
+                <say>
+                    Something moves briefly under the surface of the water, and a wave of nausea washes over you.
+                </say>
+            </steps>
+            <steps if(<var "_in_flooded_passage_count"> == 6)>
+                <say>
+                    An oily, indescribable something shoots suddenly from the black pool and drags you into the depths.
+                    A shock and tumult of icy water, then dread and darkness.
+                </say>
+                <travel>room_game_over</travel>
+            </steps>
+        </action>
+        <action "look&room_flooded_passage">
+            <steps>
+                <say>
+                    The steeply sloping tunnel proceeds underwater at this point.
+                    The utterly black surface of the [water|_water] reflects the lamplight back like a mirror.
+                </say>
+                <say>
+                    <if(<var "flooded_passage_got_shell"> == false)>
+                        An abnormally large, [iridescent conch shell|_shell] rests at the edge of the [pool|_water].
+                    <fi>
+                </say>
+            </steps>
+        </action>
+        <action "hand&_shell">
+            <say>
+                Your eyes darting periodically to the unsettling mere, you snatch the conch and back away.
+            </say>
+            <take>_shell</take>
+            <set><var "flooded_passage_got_shell"> = true</set>
+        </action>
+        <action "_shell&_water">
+            <steps if(<var "flooded_passage_got_shell"> == true)>
+                <say>
+                    You reach down and scoop some of the black water into the conch.
+                </say>
+                <move>_shell<to>nowhere</move>
+                <move>_shell_with_water<to>player</move>
+            </steps>
+        </action>
+        <action "north">
+            <steps>
+                <set><var "_in_flooded_passage_count"> = 0</set>
+                <travel>room_cell</travel>
+            </steps>
+        </action>
+        <action "south">
+            <steps>
+                <say>Not without deep sea diving equipment you don't.</say>
+            </steps>
+        </action>
+    </actions>
+</describe>
